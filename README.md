@@ -2,7 +2,7 @@
 PWA app for tracking speed and other data for use with racing on a track and post analysis
 
 # In Production
-visit https://tracker.ironcloud.us/
+visit <a href="https://tracker.ironcloud.us/" target="_blank">https://tracker.ironcloud.us/</a>
 
 # How to run locally
 1. Clone the repository
