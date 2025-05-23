@@ -2,7 +2,7 @@
 PWA Service Worker file
 Service Worker Documentation: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
  */
-const cacheVersion = '1747749201';
+const cacheVersion = '1748014126';
 let cacheName = 'ironCloud_Tracker_Cache_V' + cacheVersion;
 
 // ----------------------------------------------------
@@ -112,30 +112,3 @@ self.addEventListener('fetch', async (event) => {
         return;
     }
 });
-// --------------------------------------------------------------
-
-/*
-async function registerPeriodicNewsCheck() {
-    const registration = await navigator.serviceWorker.ready;
-    try {
-        await registration.periodicSync.register('get-latest-news', {
-            minInterval: 24 * 60 * 60 * 1000,
-        });
-    } catch {
-        console.log('Periodic Sync could not be registered!');
-    }
-}
-
-navigator.serviceWorker.ready.then(registration => {
-    registration.periodicSync.getTags().then(tags => {
-        if (tags.includes('get-latest-news'))
-            skipDownloadingLatestNewsOnPageLoad();
-    });
-});
-
-self.addEventListener('periodicsync', event => {
-  if (event.tag == 'get-latest-news') {
-    event.waitUntil(fetchAndCacheLatestNews());
-  }
-});
-*/
