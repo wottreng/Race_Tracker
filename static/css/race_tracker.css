@@ -1,0 +1,195 @@
+body {
+    background: #111;
+    color: #fff;
+    padding-top: 0.5rem;
+    padding-bottom: 1rem;
+}
+.logo{
+    max-width: 50px;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+    border-radius: 8px;
+}
+.card {
+    background: #222;
+    border: none;
+    margin-bottom: 1rem;
+}
+.error { color: #ff6b6b; }
+.map { height: 300px; overflow: hidden; }
+.btn { margin: 0.25rem 0.1rem; }
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 0.5rem;
+}
+canvas {
+    width: 100%;
+    max-width: 300px;
+    display: block;
+    margin: 1rem auto;
+}
+.toast-container {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1100;
+}
+#dataLogDisplay {
+    max-height: 50%;
+    overflow-y: auto;
+    background: #333;
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+.gps-data p {
+    margin-bottom: 0.35rem;
+}
+.side-panel {
+    position: fixed;
+    top: 0;
+    right: -100vw; /* Start off-screen */
+    width: 100vw;
+    height: 100vh;
+    background: rgba(34, 34, 34, 0.95); /* Semi-transparent background */
+    color: #fff;
+    z-index: 1050;
+    transition: right 0.3s ease;
+    box-shadow: -3px 0 10px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    backdrop-filter: blur(4px); /* Blur effect behind panel */
+}
+
+.panel-header {
+    padding: 12px 15px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    position: sticky;
+    top: 0;
+}
+
+.panel-body {
+    padding: 15px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* Tab styles - keep in fixed position */
+/* First tab - positioned at the top */
+.side-tab {
+    position: fixed;
+    right: 0;
+    top: 200px;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: right bottom;
+    background: #0d6efd;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    z-index: 1049;
+    box-shadow: 0 -3px 5px rgba(0,0,0,0.2);
+}
+
+/* Second tab - positioned below first with 10px gap */
+.side-tab1 {
+    position: fixed;
+    right: 0;
+    top: 100px;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: right bottom;
+    background: #0d6efd;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    z-index: 1049;
+    box-shadow: 0 -3px 5px rgba(0,0,0,0.2);
+}
+
+/* Third tab - positioned below second with 10px gap */
+.side-tab2 {
+    position: fixed;
+    right: 0;
+    top: 360px;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: right bottom;
+    background: #0d6efd;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    z-index: 1049;
+    box-shadow: 0 -3px 5px rgba(0,0,0,0.2);
+}
+
+.side-tab .tab-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+}
+
+.side-tab .status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: red;
+    display: inline-block;
+}
+
+/* Show panel class */
+.panel-active {
+    right: 0;
+}
+
+/* Overlay backdrop when panel is active */
+.panel-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 1040;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.backdrop-active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.map_text{
+    color: black;
+}
+
+.map-loading-indicator {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 8px 12px;
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+.spinner-border {
+    width: 1rem;
+    height: 1rem;
+    border-width: 2px;
+}
+
+.option_btn{
+    max-width: 300px;
+    background: #0d6efd;
+    color: white;
+    box-shadow: 0 -3px 5px rgba(0,0,0,0.2);
+}
