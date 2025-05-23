@@ -1,17 +1,21 @@
 {
   "name": "race_tracker",
+  "url": "https://tracker.ironcloud.us/",
   "version": "1.0.0",
   "description": "PWA app for tracking speed and other data for use with racing on a track and post analysis",
-  "main": "sw.js",
+  "browser": "race_tracker.html",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "jest": "^29.7.0"
   },
-  "homepage": "https://github.com/wottreng/Race_Tracker/tree/main",
+  "repository": "https://github.com/wottreng/Race_Tracker",
   "scripts": {
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --coverage"
+  },
+  "dependencies": {
+    "jest-environment-jsdom": "^29.7.0"
   }
 }

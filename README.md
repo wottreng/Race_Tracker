@@ -6,8 +6,8 @@ visit <a href="https://tracker.ironcloud.us/" target="_blank">https://tracker.ir
 
 # How to run locally
 1. Clone the repository
-2. Open the race_tracker.html file in a web browser
-3. Make sure to allow location access for the app to work properly
+2. Open the `race_tracker.html` file in a web browser
+3. Allow location access for the app to work properly
 
 # Features
 - Track speed, distance, time, g-forces
@@ -22,8 +22,4 @@ visit <a href="https://tracker.ironcloud.us/" target="_blank">https://tracker.ir
 - Run unit tests:
 ```bash
 npm test
-```
-- Get line coverage:
-```bash
-npm test -- --coverage
 ```

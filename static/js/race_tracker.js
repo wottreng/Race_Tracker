@@ -8,7 +8,6 @@ function segmentsIntersect(A, B, C, D) {
     function ccw(P, Q, R) {
         return (R.latitude - P.latitude) * (Q.longitude - P.longitude) > (Q.latitude - P.latitude) * (R.longitude - P.longitude);
     }
-    console.info(ccw(A, B, C), ccw(A, B, D), ccw(C, D, A), ccw(C, D, B));
     return (ccw(A, C, D) !== ccw(B, C, D)) && (ccw(A, B, C) !== ccw(A, B, D));
 }
 
@@ -46,4 +45,12 @@ function calculateTrackTimes(dataLog, track) {
         lapTimes.push(diff);
     }
     showToast(`Lap times: ${lapTimes.map(t => t.toFixed(2)).join(', ')} seconds`);
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        segmentsIntersect,
+        calculateTrackTimes,
+        RACE_TRACK_finish_line_points
+    };
 }

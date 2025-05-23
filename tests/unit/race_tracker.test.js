@@ -1,25 +1,9 @@
 // Unit tests for race tracker js
-// tests/unit/race_tracker.test.js
-// Import the entire module and add mocks for browser globals
-const fs = require('fs');
-const path = require('path');
+const { segmentsIntersect } = require('../../static/js/race_tracker.js');
 
-// Read and execute the race_tracker.js file content
-const raceTrackerPath = path.join(__dirname, '../../static/js/race_tracker.js');
-const raceTrackerCode = fs.readFileSync(raceTrackerPath, 'utf8');
-
-// Create a mock for browser globals that might be used
-global.console = {
-    info: jest.fn(),
-    error: jest.fn()
-};
-global.showToast = jest.fn();
-global.show_error = jest.fn();
-
-// Execute the code to get access to its functions
-eval(raceTrackerCode);
 
 describe('segmentsIntersect', () => {
+
     it('returns true when segments intersect', () => {
         const A = { latitude: 0, longitude: 0 };
         const B = { latitude: 1, longitude: 1 };
