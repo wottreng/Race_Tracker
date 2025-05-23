@@ -18,7 +18,6 @@ if ('serviceWorker' in navigator) {
         if (registration.waiting) {
             invokeServiceWorkerUpdateFlow(registration)
         }
-
         // detect Service Worker update available and wait for it to become installed
         registration.addEventListener('updatefound', () => {
             if (registration.installing) {
@@ -35,7 +34,6 @@ if ('serviceWorker' in navigator) {
                 })
             }
         })
-
         let refreshing = false;
 
         // detect controller change and refresh the page
