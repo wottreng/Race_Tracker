@@ -9,6 +9,10 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+                script {
+                    env.BRANCH_NAME = "main"
+                    echo "Branch name: ${env.BRANCH_NAME}"
+                }
             }
         }
 
