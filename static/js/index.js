@@ -163,7 +163,6 @@ function updatePosition(position) {
         const longitude = position.coords.longitude;
         const accuracy = position.coords.accuracy;
         let altitude = position.coords.altitude || 0;
-        let speed_meters_per_second = position.coords.speed;
         let calc_speed_meters_per_second = 0;
         const timestamp = position.timestamp;
         if (!altitude) {
@@ -182,14 +181,10 @@ function updatePosition(position) {
             const timeDelta = (timestamp - lastPosition.timestamp) / 1000; // seconds
             if (timeDelta > 0) {
                 calc_speed_meters_per_second = distance / timeDelta;
-                document.getElementById("calc_speed").innerText = (calc_speed_meters_per_second * m_per_sec_to_mph).toFixed(1);
             }
         }
         lastPosition = position;
-        if (!speed_meters_per_second) {
-            speed_meters_per_second = calc_speed_meters_per_second;
-        }
-        let speed_mph = speed_meters_per_second ? (speed_meters_per_second * m_per_sec_to_mph).toFixed(1) : 0;
+        let speed_mph = calc_speed_meters_per_second ? (calc_speed_meters_per_second * m_per_sec_to_mph).toFixed(1) : 0;
 
         data_point = {
             latitude: latitude,
@@ -197,7 +192,6 @@ function updatePosition(position) {
             accuracy_ft: accuracy * 3.28084,
             altitude_ft: altitude * 3.28084,
             speed_mph: speed_mph,
-            calculated_speed_mph: (calc_speed_meters_per_second * m_per_sec_to_mph).toFixed(1),
         }
         // Update max speed
         if (speed_mph > max_speed) {
@@ -635,7 +629,6 @@ function recordDataPoint() {
             longitude: data_point['longitude'],
             accuracy_ft: data_point['accuracy_ft'].toFixed(1),
             speed_mph: data_point['speed_mph'],
-            calculated_speed_mph: data_point['calculated_speed_mph'],
             gForce: Math.sqrt(
                 Math.pow(currentGForce.x, 2) +
                 Math.pow(currentGForce.y, 2) +
@@ -768,8 +761,9 @@ function uploadCSVdata() {
                     importModal.show();
 
                     const confirmBtn = document.getElementById('confirmImport');
-                    confirmBtn.replaceWith(confirmBtn.cloneNode(true));
-                    document.getElementById('confirmImport').addEventListener('click', function () {
+                    const newBtn = confirmBtn.cloneNode(true);
+                    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+                    newBtn.addEventListener('click', function ()  {
                         dataLog = importedData;
                         updateDataLogDisplay();
                         localStorage.setItem('raceTrackerLog', JSON.stringify(dataLog));
