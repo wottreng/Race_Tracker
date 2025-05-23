@@ -18,3 +18,12 @@ visit <a href="https://tracker.ironcloud.us/" target="_blank">https://tracker.ir
 - PWA support for offline access and installation
 - Create video from recorded data for overlay on video
 
+# Testing
+- Run unit tests:
+```bash
+npm test
+```
+- Get line coverage:
+```bash
+npm test -- --coverage
+```
