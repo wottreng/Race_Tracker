@@ -629,7 +629,6 @@ function recordDataPoint() {
             longitude: data_point['longitude'],
             accuracy_ft: data_point['accuracy_ft'].toFixed(1),
             speed_mph: data_point['speed_mph'],
-            calculated_speed_mph: data_point['calculated_speed_mph'],
             gForce: Math.sqrt(
                 Math.pow(currentGForce.x, 2) +
                 Math.pow(currentGForce.y, 2) +
@@ -762,8 +761,9 @@ function uploadCSVdata() {
                     importModal.show();
 
                     const confirmBtn = document.getElementById('confirmImport');
-                    confirmBtn.replaceWith(confirmBtn.cloneNode(true));
-                    document.getElementById('confirmImport').addEventListener('click', function () {
+                    const newBtn = confirmBtn.cloneNode(true);
+                    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+                    newBtn.addEventListener('click', function ()  {
                         dataLog = importedData;
                         updateDataLogDisplay();
                         localStorage.setItem('raceTrackerLog', JSON.stringify(dataLog));
