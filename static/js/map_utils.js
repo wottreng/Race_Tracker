@@ -1,32 +1,25 @@
-function plotDataLogOnMap() {
-    // Clear all map content completely
-    // Remove all layers except the base tile layer
-    update_map_view = false;
-    MAP.eachLayer(function (layer) {
-        if (!(layer instanceof L.TileLayer)) {
-            MAP.removeLayer(layer);
-        }
-    });
+function haversineDistance(lat1, lon1, lat2, lon2) {
+    const R = 6378137; // Earth radius in meters
+    const toRad = (value) => (value * Math.PI) / 180;
 
-    // Reset path reference and recreate empty path
-    path = L.polyline([], {color: 'blue', weight: 3}).addTo(MAP);
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
 
-    // Re-add the position marker if needed
-    if (MARKER) {
-        MARKER.addTo(MAP);
-    }
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
-    // Remove any existing legends
-    const legendControls = document.querySelectorAll('.leaflet-control.info.legend');
-    legendControls.forEach(control => control.remove());
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    // Check if we have data to plot
-    if (!dataLog || dataLog.length < 2) {
-        showToast("Not enough data points to plot");
-        return;
-    }
+    return R * c; // distance in meters
+}
 
-    // Create collections for different speed ranges
+function processDataLogSegments(dataLog) {
+    let maxGPoint = null;
+    let maxSpeedPoint = null;
+    let maxGValue = 0;
+    let maxSpeedValue = 0;
     const segments = {
         speed_0_10: {points: [], color: 'rgb(1,90,174)'},
         speed_10_20: {points: [], color: 'rgb(43,111,182)'},
@@ -39,15 +32,8 @@ function plotDataLogOnMap() {
         speed_80_90: {points: [], color: 'rgb(200,47,47)'},
         speed_90_100: {points: [], color: 'rgb(168,21,21)'},
         veryFast: {points: [], color: 'rgb(115,2,2)'},
-    };
+    }
 
-    // Find max G-force point and max speed point
-    let maxGPoint = null;
-    let maxSpeedPoint = null;
-    let maxGValue = 0;
-    let maxSpeedValue = 0;
-
-    // Process data points into segments based on speed
     dataLog.forEach(point => {
         // Skip points with invalid coordinates
         if (!point.latitude || !point.longitude) return;
@@ -93,6 +79,39 @@ function plotDataLogOnMap() {
             maxSpeedPoint = latLng;
         }
     });
+
+    return {segments, maxGPoint, maxGValue, maxSpeedPoint, maxSpeedValue};
+}
+
+function plotDataLogOnMap() {
+    // Clear all map content completely
+    // Remove all layers except the base tile layer
+    update_map_view = false;
+    MAP.eachLayer(function (layer) {
+        if (!(layer instanceof L.TileLayer)) {
+            MAP.removeLayer(layer);
+        }
+    });
+
+    // Reset path reference and recreate empty path
+    path = L.polyline([], {color: 'blue', weight: 3}).addTo(MAP);
+
+    // Re-add the position marker if needed
+    if (MARKER) {
+        MARKER.addTo(MAP);
+    }
+
+    // Remove any existing legends
+    const legendControls = document.querySelectorAll('.leaflet-control.info.legend');
+    legendControls.forEach(control => control.remove());
+
+    // Check if we have data to plot
+    if (!dataLog || dataLog.length < 2) {
+        showToast("Not enough data points to plot");
+        return;
+    }
+
+    const {segments, maxGPoint, maxGValue, maxSpeedPoint, maxSpeedValue} = processDataLogSegments(dataLog);
 
     // Draw the segments on the map
     const allPoints = [];
@@ -196,4 +215,10 @@ function clearMap() {
     legendControls.forEach(control => control.remove());
 
     showToast("Map cleared");
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        haversineDistance, processDataLogSegments
+    };
 }
