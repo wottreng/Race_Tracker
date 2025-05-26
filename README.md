@@ -26,7 +26,10 @@ To run the application locally:
     ```bash
     git clone <repository-url>
     ```
-2. Open the `race_tracker.html` file in your preferred web browser.
+2. Run http server in root directory:
+    ```bash
+    npx http-server .
+    ```
 3. Grant location access when prompted for full functionality.
 
 ## Usage
