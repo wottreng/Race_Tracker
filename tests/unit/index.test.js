@@ -61,6 +61,6 @@ describe("toggleAutoLogging", () => {
         autoLogToggle.checked = true;
         window.data_point.speed_mph = 5;
         toggleAutoLogging();
-        expect(loggingActive).toBe(false);
+        expect(window.loggingActive).toBe(false);
     });
 });
