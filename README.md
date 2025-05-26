@@ -1,25 +1,52 @@
-# Race_Tracker
-PWA app for tracking speed and other data for use with racing on a track and post analysis
+# Race Tracker
 
-# In Production
-visit <a href="https://tracker.ironcloud.us/" target="_blank">https://tracker.ironcloud.us/</a>
+Race Tracker is a Progressive Web Application (PWA) designed for tracking speed, distance, g-forces, and other telemetry data during track racing. It provides real-time data visualization, offline capabilities, and post-race analysis tools.
 
-# How to run locally
-1. Clone the repository
-2. Open the `race_tracker.html` file in a web browser
-3. Allow location access for the app to work properly
+## Live Demo
 
-# Features
-- Track speed, distance, time, g-forces
-- Display data in real-time
-- Store data locally for offline use
-- Export data to CSV format
-- Responsive design for mobile and desktop
+Access the production version here:  
+[https://tracker.ironcloud.us/](https://tracker.ironcloud.us/)
+
+<img src=ref/Screenshot_20250525.jpg style="width: 300px;" >
+
+## Features
+
+- Real-time tracking of speed, distance, time, and g-forces
+- Responsive design for both mobile and desktop devices
+- Local data storage for offline use
+- Data export to CSV format
 - PWA support for offline access and installation
-- Create video from recorded data for overlay on video
+- Video overlay creation from recorded data
 
-# Testing
-- Run unit tests:
+## Installation
+
+To run the application locally:
+
+1. Clone this repository:
+    ```bash
+    git clone <repository-url>
+    ```
+2. Open the `race_tracker.html` file in your preferred web browser.
+3. Grant location access when prompted for full functionality.
+
+## Usage
+
+- Start a session to begin tracking.
+- View real-time telemetry data on the dashboard.
+- Export your session data as CSV for further analysis.
+- Use the video overlay feature to combine telemetry with race footage.
+
+## Testing
+
+To run unit tests:
 ```bash
 npm test
 ```
+
+## License
+
+[MIT License](LICENSE)
+
+## Contact
+
+For questions or support, please contact [Mark](mailto:mwottreng@yahoo.com).
