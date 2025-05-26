@@ -15,6 +15,7 @@ describe("toggleAutoLogging", () => {
         document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
         autoLogToggle = document.getElementById("autoLogToggle");
         logStatus = document.getElementById("logStatus");
+        window.data_point = { speed_mph: 0 };
         window.speedCheckInterval = null;
         window.loggingActive = false;
     });
@@ -26,7 +27,7 @@ describe("toggleAutoLogging", () => {
 
     it("enables auto-logging when toggle is checked and speed exceeds threshold", () => {
         autoLogToggle.checked = true;
-        let data_point = { speed_mph: 25 }; // Declare and initialize data_point
+        window.data_point.speed_mph = 25;
         toggleAutoLogging();
         expect(logStatus.style.background).toBe("orange");
         expect(window.speedCheckInterval).not.toBeNull();
@@ -51,14 +52,14 @@ describe("toggleAutoLogging", () => {
     it("does not stop logging if auto-logging is disabled while logging is active", () => {
         autoLogToggle.checked = false;
         window.loggingActive = true;
-        const data_point = { speed_mph: 0 }; // Declare and initialize data_point
+        window.data_point.speed_mph = 0;
         toggleAutoLogging();
         expect(window.loggingActive).toBe(true);
     });
 
     it("does nothing if speed is below the threshold", () => {
         autoLogToggle.checked = true;
-        let data_point = { speed_mph: 5 };
+        window.data_point.speed_mph = 5;
         toggleAutoLogging();
         expect(loggingActive).toBe(false);
     });
