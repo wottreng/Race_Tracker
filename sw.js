@@ -2,7 +2,7 @@
 PWA Service Worker file
 Service Worker Documentation: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
  */
-const cacheVersion = '26may2025';
+const cacheVersion = '1748364240';
 let cacheName = 'ironCloud_Tracker_Cache_V' + cacheVersion;
 
 // ----------------------------------------------------
