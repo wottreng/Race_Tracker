@@ -886,7 +886,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
-        toggleAutoLogging,
-        uploadCSVdata
+        toggleAutoLogging
     };
 }
