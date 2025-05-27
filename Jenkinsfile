@@ -7,18 +7,6 @@ pipeline {
 
     stages {
 
-        stage('configure git') {
-            steps {
-                sh '''
-                    git config user.name "ci-bot"
-                    git config user.email "ci-bot@example.com"
-                    git remote set-url origin git@github.com:wottreng/Race_Tracker.git
-                    git clone git@github.com:wottreng/Race_Tracker.git
-                    git checkout -b "${CHANGE_BRANCH}"
-                '''
-            }
-        }
-
         stage('Debug Environment Variables') {
             steps {
                 script {
@@ -29,6 +17,25 @@ pipeline {
                     echo "GIT BRANCH_NAME: ${env.GIT_BRANCH ?: 'null'}"
                     echo "CHANGE_BRANCH: ${env.CHANGE_BRANCH ?: 'null'}"
                 }
+            }
+        }
+
+        stage('configure git for PR') {
+            when {
+                allOf {
+                    not { branch 'main' }
+                    expression { env.CHANGE_ID != null } // Only during pull requests
+                    expression { env.BUILD_NUMBER == '1' } // Only on first run
+                }
+            }
+            steps {
+                sh '''
+                    git config user.name "ci-bot"
+                    git config user.email "ci-bot@example.com"
+                    git remote set-url origin git@github.com:wottreng/Race_Tracker.git
+                    git clone git@github.com:wottreng/Race_Tracker.git
+                    git checkout -b "${CHANGE_BRANCH}"
+                '''
             }
         }
 
