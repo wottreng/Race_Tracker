@@ -36,6 +36,16 @@ pipeline {
                 }
             }
         }
+
+        stage('Main Branch Deployment') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo 'Deploying to production...'
+                sh '/server/tracker_sync_with_main.sh'
+            }
+        }
     }
 
     post {
