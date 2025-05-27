@@ -72,7 +72,6 @@ function calculateTrackTimes() {
     const lap_time_output = document.getElementById('trackTimes');
     if (lapTimes.length === 0) {
         lap_time_output.innerText = 'No laps completed yet.';
-        return;
     } else {
         lap_time_output.innerText = `Lap times: ${lapTimes.map(t => t.toFixed(2)).join(', ')} seconds`;
     }
@@ -80,33 +79,25 @@ function calculateTrackTimes() {
 }
 
 function calculateAverageSpeedOfLap() {
-    let average_speed_lap = [];
-    for (let i = 1; i < crossingTimestamps.length; i++) {
-        const start = crossingTimestamps[i - 1];
-        const end = crossingTimestamps[i];
-        let speed_list = [];
-        for (let j = 0; j < dataLog.length; j++) {
-            const timestamp = new Date(dataLog[j].timestamp);
-            if (timestamp >= start && timestamp <= end) {
-                const speed = parseFloat(dataLog[j].speed_mph);
-                if (!isNaN(speed)) {
-                    speed_list.push(speed);
-                }
-            }
-        }
-        if (speed_list.length > 0) {
-            const average_speed = speed_list.reduce((a, b) => a + b, 0) / speed_list.length;
-            average_speed_lap.push(average_speed);
-        } else {
-            average_speed_lap.push(0); // No speed data for this lap
-        }
-    }
+    const average_speed_lap = crossingTimestamps.slice(1).map((end, i) => {
+        const start = crossingTimestamps[i];
+        const speed_list = dataLog
+            .filter(entry => {
+                const timestamp = new Date(entry.timestamp);
+                return timestamp >= start && timestamp <= end;
+            })
+            .map(entry => parseFloat(entry.speed_mph))
+            .filter(speed => !isNaN(speed));
+
+        return speed_list.length > 0
+            ? speed_list.reduce((a, b) => a + b, 0) / speed_list.length
+            : 0;
+    });
+
     const average_speed_output = document.getElementById('averageSpeed');
-    if (average_speed_lap.length > 0) {
-        average_speed_output.innerText = `Average speed per lap: ${average_speed_lap.map(s => s.toFixed(2)).join(', ')} mi/h`;
-    } else {
-        average_speed_output.innerText = 'No laps completed yet.';
-    }
+    average_speed_output.innerText = average_speed_lap.length > 0
+        ? `Average speed per lap: ${average_speed_lap.map(s => s.toFixed(2)).join(', ')} mi/h`
+        : 'No Average speed data available.';
 }
 
 if (typeof module !== 'undefined' && module.exports) {
