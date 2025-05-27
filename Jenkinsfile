@@ -19,6 +19,17 @@ pipeline {
             }
         }
 
+        stage('Debug Environment Variables') {
+            steps {
+                script {
+                    echo "CHANGE_ID: ${env.CHANGE_ID ?: 'null'}"
+                    echo "BUILD_NUMBER: ${env.BUILD_NUMBER ?: 'null'}"
+                    echo "FIRST_RUN: ${env.FIRST_RUN ?: 'null'}"
+                    echo "BRANCH_NAME: ${env.BRANCH_NAME ?: 'null'}"
+                }
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
@@ -64,7 +75,7 @@ pipeline {
                 branch="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}"
                 git add sw.js
                 git commit -m "chore: update cacheVersion in sw.js [ci skip]"
-                git push origin "$branch"
+                #git push origin "$branch"
                 echo 'Service worker updated and pushed successfully.'
               fi
               '''
