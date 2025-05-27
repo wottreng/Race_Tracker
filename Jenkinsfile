@@ -13,8 +13,7 @@ pipeline {
                     git config user.name "ci-bot"
                     git config user.email "ci-bot@example.com"
                     git remote set-url origin git@github.com:wottreng/Race_Tracker.git
-                    branch="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}"
-                    git checkout -B "$branch"
+                    git checkout "${CHANGE_BRANCH}"
                 '''
             }
         }
@@ -26,6 +25,8 @@ pipeline {
                     echo "BUILD_NUMBER: ${env.BUILD_NUMBER ?: 'null'}"
                     echo "FIRST_RUN: ${env.FIRST_RUN ?: 'null'}"
                     echo "BRANCH_NAME: ${env.BRANCH_NAME ?: 'null'}"
+                    echo "GIT BRANCH_NAME: ${env.GIT_BRANCH ?: 'null'}"
+                    echo "CHANGE_BRANCH: ${env.CHANGE_BRANCH ?: 'null'}"
                 }
             }
         }
@@ -72,10 +73,9 @@ pipeline {
               sh '''
               sed -i "s/^const cacheVersion = '.*';/const cacheVersion = '$(date +%s)';/" sw.js
               if [ -n "$(git diff sw.js)" ]; then
-                branch="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}"
                 git add sw.js
                 git commit -m "chore: update cacheVersion in sw.js [ci skip]"
-                #git push origin "$branch"
+                git push origin "${CHANGE_BRANCH}"
                 echo 'Service worker updated and pushed successfully.'
               fi
               '''
