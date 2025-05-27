@@ -101,6 +101,7 @@ function calculateAverageSpeedOfLap(crossingTimestamps) {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
+        openTrackLapModal,
         segmentsIntersect,
         calculateTrackTimes,
         RACE_TRACK_finish_line_points,
