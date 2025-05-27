@@ -1,9 +1,13 @@
 const RACE_TRACK_finish_line_points = {
-    Gingerman: {left:{latitude: 42.408023, longitude: -86.140656}, right:{latitude: 42.408025, longitude: -86.140342}},
-    dev: {left:{latitude: 42.363145, longitude: -83.409558}, right:{latitude: 42.363070, longitude: -83.409418}},
+    Gingerman: {
+        left: {latitude: 42.408023, longitude: -86.140656},
+        right: {latitude: 42.408025, longitude: -86.140342}
+    },
+    dev: {left: {latitude: 42.363145, longitude: -83.409558}, right: {latitude: 42.363070, longitude: -83.409418}},
 }
+let crossingTimestamps = [];
 
-function openTrackLapModal(){
+function openTrackLapModal() {
     // add track options to trackSelect select element
     const trackSelect = document.getElementById('trackSelect');
     const tracks = [];
@@ -27,6 +31,7 @@ function segmentsIntersect(A, B, C, D) {
     function ccw(P, Q, R) {
         return (R.latitude - P.latitude) * (Q.longitude - P.longitude) > (Q.latitude - P.latitude) * (R.longitude - P.longitude);
     }
+
     return (ccw(A, C, D) !== ccw(B, C, D)) && (ccw(A, B, C) !== ccw(A, B, D));
 }
 
@@ -42,7 +47,7 @@ function calculateTrackTimes() {
     const finishLeft = finish.left;
     const finishRight = finish.right;
 
-    const crossingTimestamps = [];
+    crossingTimestamps = [];
     for (let i = 1; i < dataLog.length; i++) {
         const prev = {
             latitude: parseFloat(dataLog[i - 1].latitude),
@@ -65,7 +70,43 @@ function calculateTrackTimes() {
         lapTimes.push(diff);
     }
     const lap_time_output = document.getElementById('trackTimes');
-    lap_time_output.innerText = `Lap times: ${lapTimes.map(t => t.toFixed(2)).join(', ')} seconds`;
+    if (lapTimes.length === 0) {
+        lap_time_output.innerText = 'No laps completed yet.';
+        return;
+    } else {
+        lap_time_output.innerText = `Lap times: ${lapTimes.map(t => t.toFixed(2)).join(', ')} seconds`;
+    }
+    calculateAverageSpeedOfLap();
+}
+
+function calculateAverageSpeedOfLap() {
+    let average_speed_lap = [];
+    for (let i = 1; i < crossingTimestamps.length; i++) {
+        const start = crossingTimestamps[i - 1];
+        const end = crossingTimestamps[i];
+        let speed_list = [];
+        for (let j = 0; j < dataLog.length; j++) {
+            const timestamp = new Date(dataLog[j].timestamp);
+            if (timestamp >= start && timestamp <= end) {
+                const speed = parseFloat(dataLog[j].speed_mph);
+                if (!isNaN(speed)) {
+                    speed_list.push(speed);
+                }
+            }
+        }
+        if (speed_list.length > 0) {
+            const average_speed = speed_list.reduce((a, b) => a + b, 0) / speed_list.length;
+            average_speed_lap.push(average_speed);
+        } else {
+            average_speed_lap.push(0); // No speed data for this lap
+        }
+    }
+    const average_speed_output = document.getElementById('averageSpeed');
+    if (average_speed_lap.length > 0) {
+        average_speed_output.innerText = `Average speed per lap: ${average_speed_lap.map(s => s.toFixed(2)).join(', ')} mi/h`;
+    } else {
+        average_speed_output.innerText = 'No laps completed yet.';
+    }
 }
 
 if (typeof module !== 'undefined' && module.exports) {
