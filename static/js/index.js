@@ -343,6 +343,7 @@ function motionHandler(event) {
 function resetMaxG() {
     maxG = 0;
     document.getElementById('maxG').innerText = "0.0";
+    showToast("Max G-force reset");
 }
 
 function initTractionCircle() {
@@ -484,9 +485,16 @@ function showToast(message) {
     const toastBody = toastEl.querySelector('.toast-body');
     toastBody.innerText = message;
 
+    // Remove any existing toast instance
+    if (toastEl._toastInstance) {
+        toastEl._toastInstance.dispose();
+        toastEl._toastInstance = null;
+    }
+
     const toast = new bootstrap.Toast(toastEl, {
         delay: 3000
     });
+    toastEl._toastInstance = toast;
     toast.show();
 }
 
@@ -662,6 +670,7 @@ function initializeDataLog() {
 function resetMaxSpeed() {
     max_speed = 0;
     document.getElementById("max_speed").innerText = "0.0";
+    showToast("Max speed reset");
 }
 
 function uploadCSVdata() {
