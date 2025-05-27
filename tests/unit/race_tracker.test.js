@@ -1,5 +1,5 @@
 // Unit tests for race tracker js
-const { segmentsIntersect } = require('../../static/js/race_tracker.js');
+const { segmentsIntersect, calculateAverageSpeedOfLap } = require('../../static/js/race_tracker.js');
 
 
 describe('segmentsIntersect', () => {
@@ -50,5 +50,37 @@ describe('segmentsIntersect', () => {
         const C = { latitude: 1, longitude: 1 };
         const D = { latitude: 1, longitude: 1 };
         expect(segmentsIntersect(A, B, C, D)).toBe(false);
+    });
+});
+
+describe('calculateAverageSpeedOfLap', () => {
+    it('calculates average speed for valid crossing timestamps', () => {
+        crossingTimestamps = [new Date('2023-01-01T00:00:00Z'), new Date('2023-01-01T00:01:00Z')];
+        global.dataLog = [
+            { timestamp: '2023-01-01T00:00:30Z', speed_mph: '60' },
+            { timestamp: '2023-01-01T00:00:45Z', speed_mph: '70' },
+        ];
+        document.body.innerHTML = '<div id="averageSpeed"></div>';
+        calculateAverageSpeedOfLap(crossingTimestamps);
+        expect(document.getElementById('averageSpeed').innerText).toBe('Average speed per lap: 65.00 mi/h');
+    });
+
+    it('handles no crossing timestamps gracefully', () => {
+        crossingTimestamps = [];
+        global.dataLog = [];
+        document.body.innerHTML = '<div id="averageSpeed"></div>';
+        calculateAverageSpeedOfLap();
+        expect(document.getElementById('averageSpeed').innerText).toBe('No Average speed data available.');
+    });
+
+    it('handles crossing timestamps with no valid speed data', () => {
+        crossingTimestamps = [new Date('2023-01-01T00:00:00Z'), new Date('2023-01-01T00:01:00Z')];
+        global.dataLog = [
+            { timestamp: '2023-01-01T00:00:30Z', speed_mph: 'NaN' },
+            { timestamp: '2023-01-01T00:00:45Z', speed_mph: 'NaN' },
+        ];
+        document.body.innerHTML = '<div id="averageSpeed"></div>';
+        calculateAverageSpeedOfLap();
+        expect(document.getElementById('averageSpeed').innerText).toBe('No Average speed data available.');
     });
 });

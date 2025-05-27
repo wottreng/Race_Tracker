@@ -5,7 +5,6 @@ const RACE_TRACK_finish_line_points = {
     },
     dev: {left: {latitude: 42.363145, longitude: -83.409558}, right: {latitude: 42.363070, longitude: -83.409418}},
 }
-let crossingTimestamps = [];
 
 function openTrackLapModal() {
     // add track options to trackSelect select element
@@ -47,7 +46,7 @@ function calculateTrackTimes() {
     const finishLeft = finish.left;
     const finishRight = finish.right;
 
-    crossingTimestamps = [];
+    const crossingTimestamps = [];
     for (let i = 1; i < dataLog.length; i++) {
         const prev = {
             latitude: parseFloat(dataLog[i - 1].latitude),
@@ -75,10 +74,10 @@ function calculateTrackTimes() {
     } else {
         lap_time_output.innerText = `Lap times: ${lapTimes.map(t => t.toFixed(2)).join(', ')} seconds`;
     }
-    calculateAverageSpeedOfLap();
+    calculateAverageSpeedOfLap(crossingTimestamps);
 }
 
-function calculateAverageSpeedOfLap() {
+function calculateAverageSpeedOfLap(crossingTimestamps) {
     const average_speed_lap = crossingTimestamps.slice(1).map((end, i) => {
         const start = crossingTimestamps[i];
         const speed_list = dataLog
@@ -104,6 +103,7 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         segmentsIntersect,
         calculateTrackTimes,
-        RACE_TRACK_finish_line_points
+        RACE_TRACK_finish_line_points,
+        calculateAverageSpeedOfLap,
     };
 }
