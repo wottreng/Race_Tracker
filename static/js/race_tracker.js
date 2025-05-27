@@ -1,6 +1,25 @@
 const RACE_TRACK_finish_line_points = {
+    Gingerman: {left:{latitude: 42.408023, longitude: -86.140656}, right:{latitude: 42.408025, longitude: -86.140342}},
     dev: {left:{latitude: 42.363145, longitude: -83.409558}, right:{latitude: 42.363070, longitude: -83.409418}},
-    gingerman: {left:{latitude: 42.408023, longitude: -86.140656}, right:{latitude: 42.408025, longitude: -86.140342}},
+}
+
+function openTrackLapModal(){
+    // add track options to trackSelect select element
+    const trackSelect = document.getElementById('trackSelect');
+    const tracks = [];
+    for (const track in RACE_TRACK_finish_line_points) {
+        tracks.push(track);
+    }
+    trackSelect.innerHTML = ''; // Clear existing options
+    tracks.forEach(track => {
+        const option = document.createElement('option');
+        option.value = track;
+        option.textContent = track;
+        trackSelect.appendChild(option);
+    });
+
+    const trackLapModal = new bootstrap.Modal(document.getElementById('trackLapModal'));
+    trackLapModal.show();
 }
 
 // Helper: Check if two line segments (A-B and C-D) intersect
@@ -12,7 +31,8 @@ function segmentsIntersect(A, B, C, D) {
 }
 
 // Main function: Calculate time differences between finish line crossings
-function calculateTrackTimes(dataLog, track) {
+function calculateTrackTimes() {
+    const track = document.getElementById('trackSelect').value;
     const finish = RACE_TRACK_finish_line_points[track];
     if (!finish) {
         console.error('Unknown track:', track);
@@ -44,7 +64,8 @@ function calculateTrackTimes(dataLog, track) {
         const diff = (crossingTimestamps[i] - crossingTimestamps[i - 1]) / 1000;
         lapTimes.push(diff);
     }
-    showToast(`Lap times: ${lapTimes.map(t => t.toFixed(2)).join(', ')} seconds`);
+    const lap_time_output = document.getElementById('trackTimes');
+    lap_time_output.innerText = `Lap times: ${lapTimes.map(t => t.toFixed(2)).join(', ')} seconds`;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
