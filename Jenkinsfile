@@ -7,6 +7,18 @@ pipeline {
 
     stages {
 
+        stage('Checkout current branch') {
+            steps {
+                sh '''
+                    git config user.name "ci-bot"
+                    git config user.email "ci-bot@example.com"
+                    git remote set-url origin git@github.com:wottreng/Race_Tracker.git
+                    branch="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}"
+                    git checkout -B "$branch"
+                '''
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
@@ -34,6 +46,26 @@ pipeline {
                         reportName: 'Coverage Report'
                     ])
                 }
+            }
+        }
+
+        stage('Update and Push Service Worker') {
+            when {
+                not {
+                    branch 'main'
+                }
+            }
+            steps {
+                sh '''
+                sed -i "s/^const cacheVersion = '.*';/const cacheVersion = '$(date +%s)';/" sw.js
+                if [ -n "$(git diff sw.js)" ]; then
+                  branch="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}"
+                  git add sw.js
+                  git commit -m "chore: update cacheVersion in sw.js [ci skip]"
+                  git push origin "$branch"
+                  echo 'Service worker updated and pushed successfully.'
+                fi
+                '''
             }
         }
 
