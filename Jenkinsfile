@@ -53,7 +53,6 @@ pipeline {
                       when {
                           allOf {
                               changeRequest()
-                              expression { env.CHANGE_ID == env.CHANGE_TARGET }
                           }
                       }
                       steps {
