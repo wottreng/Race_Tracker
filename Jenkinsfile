@@ -13,7 +13,6 @@ pipeline {
                     git config user.name "ci-bot"
                     git config user.email "ci-bot@example.com"
                     git remote set-url origin git@github.com:wottreng/Race_Tracker.git
-                    git checkout "${CHANGE_BRANCH}"
                 '''
             }
         }
