@@ -49,25 +49,26 @@ pipeline {
             }
         }
 
-        stage('Update and Push Service Worker') {
-            when {
-                not {
-                    branch 'main'
-                }
-            }
-            steps {
-                sh '''
-                sed -i "s/^const cacheVersion = '.*';/const cacheVersion = '$(date +%s)';/" sw.js
-                if [ -n "$(git diff sw.js)" ]; then
-                  branch="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}"
-                  git add sw.js
-                  git commit -m "chore: update cacheVersion in sw.js [ci skip]"
-                  git push origin "$branch"
-                  echo 'Service worker updated and pushed successfully.'
-                fi
-                '''
-            }
-        }
+       stage('Update and Push Service Worker') {
+                      when {
+                          allOf {
+                              changeRequest()
+                              expression { env.CHANGE_ID == env.CHANGE_TARGET }
+                          }
+                      }
+                      steps {
+                          sh '''
+                          sed -i "s/^const cacheVersion = '.*';/const cacheVersion = '$(date +%s)';/" sw.js
+                          if [ -n "$(git diff sw.js)" ]; then
+                            branch="${BRANCH_NAME:-$(git rev-parse --abbrev-ref HEAD)}"
+                            git add sw.js
+                            git commit -m "chore: update cacheVersion in sw.js [ci skip]"
+                            git push origin "$branch"
+                            echo 'Service worker updated and pushed successfully.'
+                          fi
+                          '''
+                      }
+                  }
 
         stage('Main Branch Deployment') {
             when {
