@@ -17,27 +17,6 @@ pipeline {
             }
         }
 
-        stage('Update and Push Service Worker') {
-                    when {
-                        allOf {
-                            not { branch 'main' }
-                            expression { env.CHANGE_ID != null } // Only during pull requests
-                            expression { env.BUILD_NUMBER == '1' || env.FIRST_RUN == 'true' } // Only on first run
-                        }
-                    }
-                    steps {
-                      sh '''
-                      sed -i "s/^const cacheVersion = '.*';/const cacheVersion = '$(date +%s)';/" sw.js
-                      if [ -n "$(git diff sw.js)" ]; then
-                        git add sw.js
-                        git commit -m "chore: update cacheVersion in sw.js [ci skip]"
-                        git push origin "${CHANGE_BRANCH}"
-                        echo 'Service worker updated and pushed successfully.'
-                      fi
-                      '''
-                    }
-        }
-
         stage('Debug Environment Variables') {
             steps {
                 script {
@@ -48,6 +27,27 @@ pipeline {
                     echo "GIT BRANCH_NAME: ${env.GIT_BRANCH ?: 'null'}"
                     echo "CHANGE_BRANCH: ${env.CHANGE_BRANCH ?: 'null'}"
                 }
+            }
+        }
+
+        stage('Update and Push Service Worker') {
+            when {
+                allOf {
+                    not { branch 'main' }
+                    expression { env.CHANGE_ID != null } // Only during pull requests
+                    expression { env.BUILD_NUMBER == '1' || env.FIRST_RUN == 'true' } // Only on first run
+                }
+            }
+            steps {
+              sh '''
+              sed -i "s/^const cacheVersion = '.*';/const cacheVersion = '$(date +%s)';/" sw.js
+              if [ -n "$(git diff sw.js)" ]; then
+                git add sw.js
+                git commit -m "chore: update cacheVersion in sw.js [ci skip]"
+                git push origin "${CHANGE_BRANCH}"
+                echo 'Service worker updated and pushed successfully.'
+              fi
+              '''
             }
         }
 
