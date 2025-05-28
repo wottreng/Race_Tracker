@@ -167,18 +167,26 @@ function updatePosition(position) {
             }
         }
         lastPosition = position;
-        let speed_mph = calc_speed_meters_per_second ? (calc_speed_meters_per_second * m_per_sec_to_mph).toFixed(1) : 0;
+        let speed_mph = calc_speed_meters_per_second ? (calc_speed_meters_per_second * m_per_sec_to_mph) : 0;
+
+        // Apply Kalman filter to speed
+        const smoothed_speed = window.speedKalmanFilter.update(
+            speed_mph,
+            position.timestamp,
+            currentGForce.y  // optional: use acceleration data if available
+        );
 
         data_point = {
             latitude: latitude,
             longitude: longitude,
             accuracy_ft: accuracy * 3.28084,
             altitude_ft: altitude * 3.28084,
-            speed_mph: speed_mph,
+            speed_mph: smoothed_speed.toFixed(1),
+            unfiltered_speed_mph: speed_mph.toFixed(1)
         }
         // Update max speed
-        if (speed_mph > max_speed) {
-            max_speed = speed_mph;
+        if (smoothed_speed > max_speed) {
+            max_speed = smoothed_speed;
             document.getElementById("max_speed").innerText = max_speed.toString();
         }
 
@@ -189,7 +197,7 @@ function updatePosition(position) {
         accuracy_ui.innerText = (data_point.accuracy_ft).toFixed(1);
         accuracy_ui.style.color = accuracy < 10 ? 'green' : (accuracy < 20 ? 'orange' : 'red');
         document.getElementById('Altitude').innerText = (data_point.altitude_ft).toFixed(1);
-        document.getElementById('speed').innerText = speed_mph.toString();
+        document.getElementById('speed').innerText = smoothed_speed.toString();
 
         const newLatLng = [latitude, longitude];
         // Update marker position and center map
