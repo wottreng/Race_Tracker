@@ -16,6 +16,7 @@
     <script src="static/js/video_utils.js" defer></script>
     <script src="static/js/sw_flow.js" defer></script>
     <script src="static/js/race_tracker.js" defer></script>
+    <script src="static/js/app_utils.js" defer></script>
 </head>
 <body>
 <!-- Side panel tabs -->
@@ -135,6 +136,9 @@
             <h1 class="mb-0 fw-bold"><small class="text-secondary">Tracker</small></h1>
         </div>
         <div class="ms-auto"></div>
+        <button id="installBtn" class="btn btn-primary d-none" type="button" onclick="promptInstall()" aria-label="Install App">
+            <i class="bi bi-download me-2"></i>Install App
+        </button>
     </div>
     <div class="card text-white mb-3">
         <div class="card-header bg-gradient d-flex justify-content-between align-items-center">

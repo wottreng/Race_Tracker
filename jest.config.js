@@ -4,5 +4,5 @@ module.exports = {
     coverageDirectory: 'coverage',
     coverageReporters: ['lcov', 'text-summary'],
     testEnvironment: 'jsdom',
-    setupFiles: ['./jest.setup.js']
+    setupFiles: []
 };

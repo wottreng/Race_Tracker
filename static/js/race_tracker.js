@@ -100,8 +100,83 @@ function calculateAverageSpeedOfLap(crossingTimestamps) {
         : 'No Average speed data available.';
 }
 
+class KalmanFilter {
+    constructor(options = {}) {
+        // Initial state estimate (speed in mph)
+        this.x = options.initialValue || 0;
+
+        // Initial estimate uncertainty
+        this.P = options.initialCovariance || 1;
+
+        // Process noise (how much we expect speed to naturally change between updates)
+        // Higher values = more responsive to changes but more noise
+        this.Q = options.processNoise || 0.01;
+
+        // Measurement noise (how noisy we expect GPS readings to be)
+        // Higher values = smoother output but more lag
+        this.R = options.measurementNoise || 0.5;
+
+        // Control input (acceleration estimate) - can be adjusted with accelerometer data
+        this.u = 0;
+
+        // State transition model (how we expect speed to change naturally)
+        this.F = 1;
+
+        // Control input model
+        this.B = options.controlGain || 0.1;
+
+        // Last update timestamp
+        this.lastTimestamp = null;
+    }
+
+    // Update the filter with a new measurement
+    update(measurement, timestamp = Date.now(), acceleration = 0) {
+        // Handle time delta for process updates
+        if (this.lastTimestamp) {
+            const dt = (timestamp - this.lastTimestamp) / 1000; // seconds
+
+            // Apply control input (acceleration) if available
+            this.u = acceleration * this.B * dt;
+        }
+        this.lastTimestamp = timestamp;
+
+        // Prediction step
+        const x_pred = this.F * this.x + this.u;
+        const P_pred = this.F * this.P * this.F + this.Q;
+
+        // Update step (Kalman gain)
+        const K = P_pred / (P_pred + this.R);
+
+        // Update state and covariance
+        this.x = x_pred + K * (measurement - x_pred);
+        this.P = (1 - K) * P_pred;
+
+        return this.x;
+    }
+
+    // Get current state estimate without updating
+    getCurrentEstimate() {
+        return this.x;
+    }
+
+    // Reset the filter
+    reset(value = 0) {
+        this.x = value;
+        this.P = 1;
+        this.lastTimestamp = null;
+    }
+}
+
+window.speedKalmanFilter = new KalmanFilter({
+    initialValue: 0,
+    processNoise: 0.05,     // Tune this: higher = more responsive but noisier
+    measurementNoise: 0.8,  // Tune this: higher = smoother but more lag
+    controlGain: 0.1
+});
+
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
+        KalmanFilter,
         openTrackLapModal,
         segmentsIntersect,
         calculateTrackTimes,

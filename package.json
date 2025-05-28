@@ -1,7 +1,7 @@
 {
   "name": "race_tracker",
   "url": "https://tracker.ironcloud.us/",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "PWA app for tracking speed and other data for use with racing on a track and post analysis",
   "browser": "race_tracker.html",
   "keywords": [],

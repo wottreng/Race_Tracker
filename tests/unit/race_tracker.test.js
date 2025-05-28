@@ -1,5 +1,5 @@
 // Unit tests for race tracker js
-const { openTrackLapModal, calculateTrackTimes,segmentsIntersect, calculateAverageSpeedOfLap } = require('../../static/js/race_tracker.js');
+const { KalmanFilter, openTrackLapModal, calculateTrackTimes,segmentsIntersect, calculateAverageSpeedOfLap } = require('../../static/js/race_tracker.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -133,5 +133,58 @@ describe('calculateTrackTimes', () => {
         ];
         calculateTrackTimes();
         expect(document.getElementById('trackTimes').innerText).toBe('Lap times: 60.00, 60.00 seconds');
+    });
+});
+
+describe('KalmanFilter', () => {
+    it('returns initial value when no updates are made', () => {
+        const filter = new KalmanFilter({ initialValue: 10 });
+        expect(filter.getCurrentEstimate()).toBe(10);
+    });
+
+    it('updates state estimate with a single measurement', () => {
+        const filter = new KalmanFilter({ initialValue: 0, measurementNoise: 0.5 });
+        const updatedValue = filter.update(20);
+        expect(updatedValue).toBeGreaterThan(0);
+        expect(updatedValue).toBeLessThan(20);
+    });
+
+    it('smooths noisy measurements over multiple updates', () => {
+        const filter = new KalmanFilter({ initialValue: 0, measurementNoise: 0.5 });
+        filter.update(20);
+        const updatedValue = filter.update(25);
+        expect(updatedValue).toBeGreaterThan(18);
+        expect(updatedValue).toBeLessThan(25);
+    });
+
+    it('handles acceleration input correctly', () => {
+        const filter = new KalmanFilter({ initialValue: 0, controlGain: 0.1 });
+        const updatedValue = filter.update(10, Date.now(), 5);
+        expect(updatedValue).toBeGreaterThan(0);
+    });
+
+    it('resets state estimate and covariance', () => {
+        const filter = new KalmanFilter({ initialValue: 10 });
+        filter.update(20);
+        filter.reset(5);
+        expect(filter.getCurrentEstimate()).toBe(5);
+    });
+
+    it('handles edge case of zero measurement noise', () => {
+        const filter = new KalmanFilter({ initialValue: 0, measurementNoise: 0 });
+        const updatedValue = filter.update(20);
+        expect(updatedValue).toBeCloseTo(13.37, 1)
+    });
+
+    it('handles edge case of zero process noise', () => {
+        const filter = new KalmanFilter({ initialValue: 0, processNoise: 0 });
+        const updatedValue = filter.update(20);
+        expect(updatedValue).toBeGreaterThan(0);
+        expect(updatedValue).toBeLessThan(20);
+    });
+
+    it('handles edge case of no measurements', () => {
+        const filter = new KalmanFilter({ initialValue: 0 });
+        expect(filter.getCurrentEstimate()).toBe(0);
     });
 });
