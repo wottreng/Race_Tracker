@@ -176,6 +176,7 @@ window.speedKalmanFilter = new KalmanFilter({
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
+        KalmanFilter,
         openTrackLapModal,
         segmentsIntersect,
         calculateTrackTimes,
