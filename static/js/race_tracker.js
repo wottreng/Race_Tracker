@@ -9,10 +9,7 @@ const RACE_TRACK_finish_line_points = {
 function openTrackLapModal() {
     // add track options to trackSelect select element
     const trackSelect = document.getElementById('trackSelect');
-    const tracks = [];
-    for (const track in RACE_TRACK_finish_line_points) {
-        tracks.push(track);
-    }
+    const tracks = Object.keys(RACE_TRACK_finish_line_points);
     trackSelect.innerHTML = ''; // Clear existing options
     tracks.forEach(track => {
         const option = document.createElement('option');
@@ -78,6 +75,12 @@ function calculateTrackTimes() {
 }
 
 function calculateAverageSpeedOfLap(crossingTimestamps) {
+    const average_speed_output = document.getElementById('averageSpeed');
+    if (!Array.isArray(crossingTimestamps) || crossingTimestamps.length < 2) {
+        console.error('Invalid crossingTimestamps parameter. Expected a non-empty array.');
+        average_speed_output.innerText = 'No Average speed data available.';
+        return;
+    }
     const average_speed_lap = crossingTimestamps.slice(1).map((end, i) => {
         const start = crossingTimestamps[i];
         const speed_list = dataLog
@@ -93,7 +96,6 @@ function calculateAverageSpeedOfLap(crossingTimestamps) {
             : 0;
     });
 
-    const average_speed_output = document.getElementById('averageSpeed');
     average_speed_output.innerText = average_speed_lap.length > 0
         ? `Average speed per lap: ${average_speed_lap.map(s => s.toFixed(2)).join(', ')} mi/h`
         : 'No Average speed data available.';
