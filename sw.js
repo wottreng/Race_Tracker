@@ -77,7 +77,7 @@ const cacheFirst = async (request) => {
         console.log('[SW]: no match in cache for {' + request.url + '}, need to fetch');
         const responseFromNetwork = await fetch(request);
         if (responseFromNetwork.ok) {
-            putInCache(request, responseFromNetwork.clone());
+            await putInCache(request, responseFromNetwork.clone());
         }
         return responseFromNetwork;
     } catch (error) {
@@ -107,9 +107,7 @@ self.addEventListener('fetch', async (event) => {
         }
         console.log("[SW] fetching: " + event.request.url);
         await event.respondWith(fetch(event.request));
-        return;
     } else { // POST Req -----
         console.log('[SW]: --> POST req: ' + event.request.url);
-        return;
     }
 });

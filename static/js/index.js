@@ -243,6 +243,7 @@ function requestPermission() {
                 startLocationTracking();
             },
             function (error) {
+                console.log(error);
                 showToast("Could not get permissions");
             }
         );
@@ -820,7 +821,7 @@ async function handleVisibilityChange() {
     }
 }
 
-async function add_event_listener_setup() {
+function add_event_listener_setup() {
     const logTab = document.getElementById('logTab');
     const logPanel = document.getElementById('logPanel');
     const closeBtn = document.getElementById('closeLogPanel');
@@ -884,7 +885,7 @@ async function add_event_listener_setup() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener('DOMContentLoaded', function () {
     init();
     add_event_listener_setup();
     initializeDataLog();
