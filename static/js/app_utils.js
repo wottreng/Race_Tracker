@@ -37,3 +37,9 @@ function promptInstall() {
         console.warn('No deferred prompt available');
     }
 }
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        showInstallButton
+    };
+}
