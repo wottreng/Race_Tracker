@@ -12,11 +12,15 @@ Access the production version here:
 ## Features
 
 - Real-time tracking of speed, distance, time, and g-forces
-- Responsive design for both mobile and desktop devices
 - Local data storage for offline use
-- Data export to CSV format
+- Export data to CSV format
+- Import data from CSV files
 - PWA support for offline access and installation
 - Video overlay creation from recorded data
+- Calculate lap times and average speeds
+- Tracks maximum speed and g-forces
+- Plot data points on the map
+- Set automatic start for logging
 
 ## Installation
 
