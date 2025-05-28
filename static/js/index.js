@@ -181,8 +181,8 @@ function updatePosition(position) {
             longitude: longitude,
             accuracy_ft: accuracy * 3.28084,
             altitude_ft: altitude * 3.28084,
-            speed_mph: smoothed_speed.toFixed(1),
-            unfiltered_speed_mph: speed_mph.toFixed(1)
+            speed_mph: parseFloat(smoothed_speed.toFixed(1)),
+            unfiltered_speed_mph: parseFloat(speed_mph.toFixed(1))
         }
         // Update max speed
         if (smoothed_speed > max_speed) {
