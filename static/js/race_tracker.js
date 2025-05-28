@@ -77,7 +77,6 @@ function calculateTrackTimes() {
 function calculateAverageSpeedOfLap(crossingTimestamps) {
     const average_speed_output = document.getElementById('averageSpeed');
     if (!Array.isArray(crossingTimestamps) || crossingTimestamps.length < 2) {
-        console.error('Invalid crossingTimestamps parameter. Expected a non-empty array.');
         average_speed_output.innerText = 'No Average speed data available.';
         return;
     }

@@ -115,36 +115,23 @@ describe('calculateTrackTimes', () => {
         expect(document.getElementById('trackTimes').innerText).toBe('Lap times: 60.00 seconds');
     });
 
-    // it('handles no crossings gracefully', () => {
-    //     global.dataLog = [
-    //         { latitude: '42.408020', longitude: '-86.140650', timestamp: '2023-01-01T00:00:00Z' },
-    //         { latitude: '42.408020', longitude: '-86.140650', timestamp: '2023-01-01T00:01:00Z' },
-    //     ];
-    //     document.body.innerHTML = '<select id="trackSelect"><option value="Gingerman" selected></option></select><div id="trackTimes"></div>';
-    //     calculateTrackTimes();
-    //     expect(document.getElementById('trackTimes').innerText).toBe('No laps completed yet.');
-    // });
-    //
-    // it('handles unknown track selection', () => {
-    //     global.dataLog = [
-    //         { latitude: '42.408020', longitude: '-86.140650', timestamp: '2023-01-01T00:00:00Z' },
-    //         { latitude: '42.408024', longitude: '-86.140344', timestamp: '2023-01-01T00:01:00Z' },
-    //     ];
-    //     document.body.innerHTML = '<select id="trackSelect"><option value="UnknownTrack" selected></option></select><div id="trackTimes"></div>';
-    //     const mockShowError = jest.fn();
-    //     global.show_error = mockShowError;
-    //     calculateTrackTimes();
-    //     expect(mockShowError).toHaveBeenCalledWith('Unknown track: UnknownTrack');
-    // });
-    //
-    // it('calculates lap times with multiple crossings', () => {
-    //     global.dataLog = [
-    //         { latitude: '42.408020', longitude: '-86.140650', timestamp: '2023-01-01T00:00:00Z' },
-    //         { latitude: '42.408024', longitude: '-86.140344', timestamp: '2023-01-01T00:01:00Z' },
-    //         { latitude: '42.408024', longitude: '-86.140344', timestamp: '2023-01-01T00:02:00Z' },
-    //     ];
-    //     document.body.innerHTML = '<select id="trackSelect"><option value="Gingerman" selected></option></select><div id="trackTimes"></div>';
-    //     calculateTrackTimes();
-    //     expect(document.getElementById('trackTimes').innerText).toBe('Lap times: 60.00, 60.00 seconds');
-    // });
+    it('handles no crossings gracefully', () => {
+        global.dataLog = [
+            { latitude: '42.408020', longitude: '-86.140650', timestamp: '2023-01-01T00:00:00Z' },
+            { latitude: '42.408020', longitude: '-86.140650', timestamp: '2023-01-01T00:01:00Z' },
+        ];
+        calculateTrackTimes();
+        expect(document.getElementById('trackTimes').innerText).toBe('No laps completed yet.');
+    });
+
+    it('calculates lap times with multiple crossings', () => {
+        global.dataLog = [
+            { latitude: '42.407832', longitude: '-86.140499', timestamp: '2023-01-01T00:00:00Z' },
+            { latitude: '42.408362', longitude: '-86.140500', timestamp: '2023-01-01T00:01:00Z' },
+            { latitude: '42.407832', longitude: '-86.140499', timestamp: '2023-01-01T00:02:00Z' },
+            { latitude: '42.408362', longitude: '-86.140500', timestamp: '2023-01-01T00:03:00Z' },
+        ];
+        calculateTrackTimes();
+        expect(document.getElementById('trackTimes').innerText).toBe('Lap times: 60.00, 60.00 seconds');
+    });
 });
