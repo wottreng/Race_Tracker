@@ -1,4 +1,5 @@
-const { toggleAutoLogging } = require('../../static/js/index');
+const { toggleAutoLogging, updatePosition } = require('../../static/js/index');
+const { haversineDistance } = require('../../static/js/map_utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -62,5 +63,74 @@ describe("toggleAutoLogging", () => {
         window.data_point.speed_mph = 5;
         toggleAutoLogging();
         expect(window.loggingActive).toBe(false);
+    });
+});
+
+describe("updatePosition", () => {
+    let position;
+
+    beforeEach(() => {
+        position = {
+            coords: {
+                latitude: 40.7128,
+                longitude: -74.0060,
+                accuracy: 5,
+                altitude: 10
+            },
+            timestamp: Date.now()
+        };
+        window.speedKalmanFilter = {
+            update: jest.fn().mockReturnValue(30.1236546545)
+        };
+        window.haversineDistance = haversineDistance;
+        currentGForce = { x: 0, y: 0, z: 0 };
+        document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
+    });
+
+    afterEach(() => {
+        document.body.innerHTML = '';
+        window.speedKalmanFilter.update.mockClear();
+    });
+
+    it("updates position and calculates speed correctly", () => {
+        updatePosition(position);
+        expect(document.getElementById("Latitude").innerText).toBe("40.7128");
+        expect(document.getElementById("Longitude").innerText).toBe("-74.006");
+        expect(document.getElementById("Accuracy").innerText).toBe("16.4");
+        expect(document.getElementById("Altitude").innerText).toBe("32.8");
+        expect(document.getElementById("speed").innerText).toBe("30.1");
+        expect(document.getElementById("max_speed").innerText).toBe("30.1");
+    });
+
+    it("handles missing altitude gracefully", () => {
+        position.coords.altitude = null;
+        updatePosition(position);
+        expect(document.getElementById("Altitude").innerText).toBe("0.0");
+    });
+
+    it("handles invalid position data without throwing errors", () => {
+        position.coords.latitude = null;
+        position.coords.longitude = null;
+        updatePosition(position);
+        expect(document.getElementById("Latitude").innerText).toBe("");
+        expect(document.getElementById("Longitude").innerText).toBe("");
+    });
+
+    it("calculates speed using haversine distance when last position exists", () => {
+        lastPosition = {
+            coords: { latitude: 40.7127, longitude: -74.0059 },
+            timestamp: position.timestamp - 1000
+        };
+        updatePosition(position);
+        expect(window.speedKalmanFilter.update).toHaveBeenCalledWith(expect.any(Number), expect.any(Number), 0);
+    });
+
+    it("does not calculate speed when time delta is zero", () => {
+        lastPosition = {
+            coords: { latitude: 40.7127, longitude: -74.0059 },
+            timestamp: position.timestamp
+        };
+        updatePosition(position);
+        expect(window.speedKalmanFilter.update).toHaveBeenCalledWith(0, expect.any(Number), 0);
     });
 });
