@@ -510,7 +510,6 @@ function show_error(message) {
 
 function toggleAutoLogging() {
     autoLoggingEnabled = document.getElementById('autoLogToggle').checked;
-    console.log("[INFO] Toggling auto-logging:", autoLoggingEnabled);
     showToast('Auto-logging ' + (autoLoggingEnabled ? 'enabled' : 'disabled'));
     if (autoLoggingEnabled && !window.speedCheckInterval) {
         document.getElementById("logStatus").style.background = 'orange';
