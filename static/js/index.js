@@ -609,7 +609,7 @@ function recordDataPoint() {
             return;
         }
 
-        const dataPoint = {
+        const _data_point = {
             timestamp: new Date().toISOString(),
             latitude: data_point['latitude'],
             longitude: data_point['longitude'],
@@ -625,7 +625,7 @@ function recordDataPoint() {
             gZ: currentGForce.z || 0
         };
 
-        logData(dataPoint);
+        logData(_data_point);
         totalPointsRecorded++;
     } catch (e) {
         console.error("Error recording data point:", e);
