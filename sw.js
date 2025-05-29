@@ -56,7 +56,12 @@ self.addEventListener('activate', async (event) => {
 
 // listen for messages from the client
 self.addEventListener('message', (event) => {
-    console.log('[SW] message: ' + event.data);
+    const trustedOrigins = ['https://www.example.com']; // Add trusted origins here
+    if (trustedOrigins.includes(event.origin)) {
+        console.log('[SW] message from trusted origin: ' + event.data);
+    } else {
+        console.warn('[SW] message from untrusted origin: ' + event.origin);
+    }
 });
 
 //
