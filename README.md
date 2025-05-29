@@ -38,8 +38,9 @@ To run the application locally:
 
 ## Usage
 
-- Start a session to begin tracking.
+- Open the app.
 - View real-time telemetry data on the dashboard.
+- Start logging data in the logging menu.
 - Export your session data as CSV for further analysis.
 - Use the video overlay feature to combine telemetry with race footage.
 
