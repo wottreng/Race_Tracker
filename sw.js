@@ -99,20 +99,61 @@ const cacheFirst = async (request) => {
         return new Response(body, options);
     }
 };
-const do_cache = ["/sw.js", "/", "static/"];
-self.addEventListener('fetch', async (event) => {
+
+self.addEventListener('fetch', (event) => {
     if (event.request.method === "GET") {
         console.log('[SW]: --> GET req: ' + event.request.url);
-        // check if request is for a page that should be cached
-        for (let i = 0; i < do_cache.length; i++) {
-            if (event.request.url.indexOf(do_cache[i]) > -1) {
-                await event.respondWith(cacheFirst(event.request));
-                return;
+        event.respondWith((async () => {
+            try {
+                const response = await cacheFirst(event.request);
+                if (response) {
+                    return response;
+                } else {
+                    // if no response is found, return a fallback response
+                    let body = "fallback response";
+                    let options = {
+                        status: 404,
+                        headers: {'Content-Type': 'text/plain'},
+                    }
+                    return new Response(body, options);
+                }
+            } catch (error) {
+                console.error("[SW][ERROR] fetch error: " + event.request.url);
+                console.error(error);
+                // when even the fallback response is not available,
+                // there is nothing we can do, but we must always
+                // return a Response object
+                let body = "network error";
+                let options = {
+                    status: 408,
+                    headers: {'Content-Type': 'text/plain'},
+                }
+                return new Response(body, options);
             }
-        }
-        console.log("[SW] fetching: " + event.request.url);
-        await event.respondWith(fetch(event.request));
+        })());
     } else { // POST Req -----
         console.log('[SW]: --> POST req: ' + event.request.url);
+        event.respondWith((async () => {
+            try {
+                const response = await fetch(event.request);
+                if (response.ok) {
+                    // cache the response
+                    await putInCache(event.request, response.clone());
+                }
+                return response;
+            } catch (error) {
+                console.error("[SW][ERROR] network error: " + event.request.url);
+                console.error(error);
+                // when even the fallback response is not available,
+                // there is nothing we can do, but we must always
+                // return a Response object
+                let body = "network error";
+                let options = {
+                    status: 408,
+                    headers: {'Content-Type': 'text/plain'},
+                }
+                return new Response(body, options);
+            }
+        })());
     }
 });
