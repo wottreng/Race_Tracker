@@ -176,9 +176,11 @@ window.speedKalmanFilter = new KalmanFilter({
 
 let dataLogChartInstance = null;
 
-function updateGraph() {
+async function updateGraph() {
+
     const type = document.getElementById('graphSelect').value;
     const ctx = document.getElementById('graphCanvas').getContext('2d');
+    const canvas = document.getElementById('graphCanvas');
 
     if (dataLogChartInstance) {
         dataLogChartInstance.destroy();
@@ -199,7 +201,7 @@ function updateGraph() {
             data = dataLog.map(entry => parseFloat(entry.speed_mph) || 0);
             label = 'Speed (mph)';
         } else if (type === 'gForce') {
-            data = dataLog.map(entry => parseFloat(entry.g_total) || 0);
+            data = dataLog.map(entry => parseFloat(entry.gForce) || 0);
             label = 'G-Force (g)';
         }
     }
@@ -219,6 +221,7 @@ function updateGraph() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: { display: true },
                 title: { display: false }
