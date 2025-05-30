@@ -1,60 +1,15 @@
 describe('tracker frontend test', () => {
     beforeEach(() => {
-        // Define the geolocation object with all necessary methods
-        const geolocation = {
-            getCurrentPosition: (success) => {
-                success({
-                    coords: {
-                        latitude: 37.7749,
-                        longitude: -122.4194,
-                        accuracy: 10,
-                        altitude: 100,
-                        altitudeAccuracy: 5,
-                        heading: 90,
-                        speed: 25
-                    },
-                    timestamp: Date.now()
-                });
-            },
-            watchPosition: (success) => {
-                const watchId = setInterval(() => {
-                    success({
-                        coords: {
-                            latitude: 37.7749,
-                            longitude: -122.4194,
-                            accuracy: 10,
-                            altitude: 100,
-                            altitudeAccuracy: 5,
-                            heading: 90,
-                            speed: 25
-                        },
-                        timestamp: Date.now()
-                    });
-                }, 3000);
-                return watchId;
-            },
-            clearWatch: () => {}
-        };
-
         // Visit the page first
         cy.visit('/race_tracker.html');
 
-        // Then stub the navigator and map_struct methods
-        cy.window().then(win => {
-            cy.stub(win.navigator.geolocation, 'getCurrentPosition').callsFake(geolocation.getCurrentPosition);
-            cy.stub(win.navigator.geolocation, 'watchPosition').callsFake(geolocation.watchPosition);
-            cy.stub(win.navigator.geolocation, 'clearWatch').callsFake(geolocation.clearWatch);
+    });
 
-            // Wait for map_struct to be initialized
-            cy.wait(1000);
-
-            // Make sure map_struct.MARKER exists before stubbing
-            if (win.map_struct && win.map_struct.MARKER) {
-                cy.stub(win.map_struct.MARKER, 'getLatLng').returns({ lat: 37.7749, lng: -122.4194 });
-            } else {
-                cy.log('Warning: map_struct.MARKER not available for stubbing');
-            }
-        });
+    it('open map tab and test map', () => {
+        cy.get('#mapTab > .tab-content').should('exist').click();
+        cy.wait(1000);
+        cy.get('[onclick="plotDataLogOnMap()"] > span').should('exist');
+        cy.get('[onclick="clearMap()"] > span').should('exist');
     });
 
     it('open data logger tab and test logging', () => {
@@ -76,7 +31,7 @@ describe('tracker frontend test', () => {
 
     it('open options tab and test options', () => {
         cy.get('#optionTab').contains('Options').should('exist').click();
-        cy.wait(500);
+        cy.wait(1000);
         cy.get('[onclick="reset_GPS()"] > span').should('exist').click();
         cy.get('#toast').should('exist');
         cy.wait(1000);
@@ -86,4 +41,5 @@ describe('tracker frontend test', () => {
         cy.get('#toast').should('exist');
         cy.wait(1000);
     });
+
 });
