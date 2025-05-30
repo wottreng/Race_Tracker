@@ -56,7 +56,7 @@ self.addEventListener('activate', async (event) => {
 
 // listen for messages from the client
 self.addEventListener('message', (event) => {
-    const trustedOrigins = ['https://www.example.com']; // Add trusted origins here
+    const trustedOrigins = ['https://tracker.ironcloud.us/'];
     if (trustedOrigins.includes(event.origin)) {
         console.log('[SW] message from trusted origin: ' + event.data);
     } else {
