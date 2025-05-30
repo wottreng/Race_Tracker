@@ -176,11 +176,9 @@ window.speedKalmanFilter = new KalmanFilter({
 
 let dataLogChartInstance = null;
 
-async function updateGraph() {
-
+function updateGraph() {
     const type = document.getElementById('graphSelect').value;
     const ctx = document.getElementById('graphCanvas').getContext('2d');
-    const canvas = document.getElementById('graphCanvas');
 
     if (dataLogChartInstance) {
         dataLogChartInstance.destroy();
@@ -224,7 +222,23 @@ async function updateGraph() {
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: true },
-                title: { display: false }
+                title: { display: false },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x',
+                        threshold: 10,
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                        },
+                        pinch: {
+                            enabled: true,
+                        },
+                        mode: 'x',
+                    }
+                }
             },
             scales: {
                 x: {
@@ -244,13 +258,10 @@ async function updateGraph() {
     });
 }
 
-function clearGraph() {
+function resetZoom(){
     if (dataLogChartInstance) {
-        dataLogChartInstance.destroy();
-        dataLogChartInstance = null;
+        dataLogChartInstance.resetZoom();
     }
-    const ctx = document.getElementById('graphCanvas').getContext('2d');
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 }
 
 
