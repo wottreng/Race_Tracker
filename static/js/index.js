@@ -193,7 +193,7 @@ function updatePosition(position) {
         // Update max speed
         if (smoothed_speed > metrics.max_speed) {
             metrics.max_speed = smoothed_speed;
-            document.getElementById("max_speed").innerText = max_speed.toString();
+            document.getElementById("max_speed").textContent = metrics.max_speed.toString();
         }
 
         // Update text display
@@ -752,7 +752,7 @@ function uploadCSVdata() {
                     const confirmBtn = document.getElementById('confirmImport');
                     const newBtn = confirmBtn.cloneNode(true);
                     confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-                    newBtn.addEventListener('click', function ()  {
+                    newBtn.addEventListener('click', function () {
                         dataLog = importedData;
                         updateDataLogDisplay();
                         localStorage.setItem('raceTrackerLog', JSON.stringify(dataLog));

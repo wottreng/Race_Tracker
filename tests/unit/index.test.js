@@ -85,6 +85,14 @@ describe("updatePosition", () => {
         window.haversineDistance = haversineDistance;
         currentGForce = { x: 0, y: 0, z: 0 };
         document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
+        window.map_struct = {
+            MARKER : {
+                setPosition: jest.fn(),
+                setMap: jest.fn(),
+                setLatLng: jest.fn()
+            }
+        }
+
     });
 
     afterEach(() => {
@@ -99,7 +107,7 @@ describe("updatePosition", () => {
         expect(document.getElementById("Accuracy").innerText).toBe("16.4");
         expect(document.getElementById("Altitude").innerText).toBe("32.8");
         expect(document.getElementById("speed").innerText).toBe("30.1");
-        expect(document.getElementById("max_speed").innerText).toBe("30.1");
+        expect(document.getElementById("max_speed").innerHTML).toBe("30.1");
     });
 
     it("handles missing altitude gracefully", () => {
