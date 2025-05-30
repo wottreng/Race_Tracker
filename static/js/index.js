@@ -354,7 +354,7 @@ function motionHandler(event) {
     // Update max G-force
     if (totalG > metrics.maxG) {
         metrics.maxG = totalG;
-        maxGDisplay.innerText = maxG.toFixed(2).toString();
+        maxGDisplay.innerHTML = metrics.maxG.toFixed(2).toString();
     }
 
     updateTractionCircle();
