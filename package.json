@@ -16,6 +16,7 @@
     "test:watch": "jest --coverage"
   },
   "dependencies": {
-    "jest-environment-jsdom": "^29.7.0"
+    "jest-environment-jsdom": "^29.7.0",
+    "wait-on": "^8.0.3"
   }
 }
