@@ -1,7 +1,8 @@
-let MAP;
-let MARKER;
-let path;
-let maxG = 0;
+let map_struct = {
+    MAP: null,
+    MARKER: null,
+    path: null,
+}
 let loggingActive = false;
 let autoLoggingEnabled = false;
 let locationWatchId = null;
@@ -11,7 +12,6 @@ let lastGpsUpdate = null;
 let lastPosition = null;
 let totalPointsRecorded = 0;
 let data_point = {};
-let max_speed = 0;
 let currentGForce = {x: 0, y: 0, z: 0};
 const auto_logging_speed = 20; // mph
 let update_map_view = true;
@@ -20,6 +20,11 @@ let tractionCtx;
 let tractionCenterX;
 let tractionCenterY;
 const m_per_sec_to_mph = 2.23694;
+
+let metrics = {
+    max_speed: 0,
+    maxG: 0,
+}
 
 function init() {
     document.getElementById('autoLogToggle').checked = autoLoggingEnabled;
@@ -31,7 +36,7 @@ function init() {
 
 function initMap() {
     // Start with a neutral initial view that shows most of the world
-    MAP = L.map('map', {
+    map_struct.MAP = L.map('map', {
         worldCopyJump: true,
         minZoom: 2
     }).setView([30, 0], 2); // More centered world view
@@ -39,7 +44,7 @@ function initMap() {
     // Add tile layer (map style)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(MAP);
+    }).addTo(map_struct.MAP);
 
     // Add loading indicator
     const loadingControl = L.control({position: 'bottomleft'});
@@ -48,14 +53,14 @@ function initMap() {
         div.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><span class="ms-2">Waiting for GPS signal...</span>';
         return div;
     };
-    loadingControl.addTo(MAP);
+    loadingControl.addTo(map_struct.MAP);
 
     // Create marker for current position (will be positioned when GPS data arrives)
-    MARKER = L.marker([0, 0]);
-    MARKER.addTo(MAP);
+    map_struct.MARKER = L.marker([0, 0]);
+    map_struct.MARKER.addTo(map_struct.MAP);
 
     // Create polyline for tracking path
-    path = L.polyline([], {color: 'blue', weight: 3}).addTo(MAP);
+    map_struct.path = L.polyline([], {color: 'blue', weight: 3}).addTo(map_struct.MAP);
 
     // Try browser's geolocation API as a fallback while waiting for GPS
     if (navigator.geolocation) {
@@ -67,8 +72,8 @@ function initMap() {
 
                 // Only update if we haven't received GPS data yet
                 if (!lastGpsUpdate) {
-                    MAP.setView([lat, lng], 13);
-                    MARKER.setLatLng([lat, lng]);
+                    map_struct.MAP.setView([lat, lng], 13);
+                    map_struct.MARKER.setLatLng([lat, lng]);
                     document.querySelector('.map-loading-indicator').innerHTML =
                         '<span class="text-warning">Using approximate location. Waiting for GPS...</span>';
                 }
@@ -186,9 +191,9 @@ function updatePosition(position) {
             unfiltered_speed_mph: parseFloat(speed_mph.toFixed(1))
         }
         // Update max speed
-        if (smoothed_speed > max_speed) {
-            max_speed = smoothed_speed;
-            document.getElementById("max_speed").innerText = max_speed.toString();
+        if (smoothed_speed > metrics.max_speed) {
+            metrics.max_speed = smoothed_speed;
+            document.getElementById("max_speed").textContent = metrics.max_speed.toString();
         }
 
         // Update text display
@@ -207,9 +212,9 @@ function updatePosition(position) {
 
         const newLatLng = [latitude, longitude];
         // Update marker position and center map
-        MARKER.setLatLng(newLatLng);
+        map_struct.MARKER.setLatLng(newLatLng);
         if (update_map_view === true) {
-            MAP.setView(newLatLng);
+            map_struct.MAP.setView(newLatLng);
             document.querySelector('.map-loading-indicator').innerHTML =
                 '<span class="text-warning"></span>';
         }
@@ -233,8 +238,8 @@ function handleLocationError(error) {
         case error.TIMEOUT:
             errorMsg = "Request to get location timed out.";
             break;
-        case error.UNKNOWN_ERROR:
-            errorMsg = "An unknown error occurred.";
+        default:
+            errorMsg = "An unknown error occurred: " + error.message;
             break;
     }
     show_error(errorMsg);
@@ -347,8 +352,8 @@ function motionHandler(event) {
     );
 
     // Update max G-force
-    if (totalG > maxG) {
-        maxG = totalG;
+    if (totalG > metrics.maxG) {
+        metrics.maxG = totalG;
         maxGDisplay.innerText = maxG.toFixed(2).toString();
     }
 
@@ -523,9 +528,11 @@ function show_error(message) {
     }, 5000);
 }
 
-function toggleAutoLogging() {
+function toggleAutoLogging(silent = true) {
     autoLoggingEnabled = document.getElementById('autoLogToggle').checked;
-    showToast('Auto-logging ' + (autoLoggingEnabled ? 'enabled' : 'disabled'));
+    if (!silent) {
+        showToast('Auto-logging ' + (autoLoggingEnabled ? 'enabled' : 'disabled'));
+    }
     if (autoLoggingEnabled && !window.speedCheckInterval) {
         document.getElementById("logStatus").style.background = 'orange';
         window.speedCheckInterval = setInterval(() => {
@@ -554,7 +561,7 @@ function manualStartLogging() {
 
 function manualStopLogging() {
     document.getElementById('autoLogToggle').checked = false;
-    toggleAutoLogging()
+    toggleAutoLogging(true);
     stopLogging();
 }
 
@@ -591,20 +598,20 @@ function stopLogging() {
 function recordDataPoint() {
     try {
         // Test if marker exists and has position data
-        if (!MARKER) {
+        if (!map_struct.MARKER) {
             console.error("No marker available for position data");
             showToast("No marker available for position data");
             return;
         }
 
-        const position = MARKER.getLatLng();
+        const position = map_struct.MARKER.getLatLng();
         if (!position || (position.lat === 0 && position.lng === 0)) {
             console.warn("Invalid position data:", position);
             showToast("Invalid position data");
             return;
         }
 
-        const dataPoint = {
+        const _data_point = {
             timestamp: new Date().toISOString(),
             latitude: data_point['latitude'],
             longitude: data_point['longitude'],
@@ -620,7 +627,7 @@ function recordDataPoint() {
             gZ: currentGForce.z || 0
         };
 
-        logData(dataPoint);
+        logData(_data_point);
         totalPointsRecorded++;
     } catch (e) {
         console.error("Error recording data point:", e);
@@ -649,9 +656,9 @@ function updateDataLogDisplay() {
     let html = '<table style="width: 100%; border-collapse: collapse;">';
 
     // Add headers
-    html += '<tr style="border-bottom: 1px solid #555;">';
+    html += '<tr style="border-bottom: 1px solid #555; position: sticky; top: 0; background: #222; z-index: 2;">';
     Object.keys(dataLog[0]).forEach(key => {
-        html += `<th style="padding: 4px; text-align: left; color: #0af;">${key}</th>`;
+        html += `<th style="padding: 4px; text-align: left; color: #0af; background: #222; position: sticky; top: 0; z-index: 2;">${key}</th>`;
     });
     html += '</tr>';
 
@@ -682,7 +689,7 @@ function initializeDataLog() {
 }
 
 function resetMaxSpeed() {
-    max_speed = 0;
+    metrics.max_speed = 0;
     document.getElementById("max_speed").innerText = "0.0";
     showToast("Max speed reset");
 }
@@ -745,7 +752,7 @@ function uploadCSVdata() {
                     const confirmBtn = document.getElementById('confirmImport');
                     const newBtn = confirmBtn.cloneNode(true);
                     confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-                    newBtn.addEventListener('click', function ()  {
+                    newBtn.addEventListener('click', function () {
                         dataLog = importedData;
                         updateDataLogDisplay();
                         localStorage.setItem('raceTrackerLog', JSON.stringify(dataLog));

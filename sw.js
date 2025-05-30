@@ -3,7 +3,7 @@ PWA Service Worker file
 Service Worker Documentation: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
  */
 
-const cacheVersion = '1748483419';
+const cacheVersion = '1748484922';
 let cacheName = 'ironCloud_Tracker_Cache_V' + cacheVersion;
 
 // ----------------------------------------------------
@@ -56,7 +56,12 @@ self.addEventListener('activate', async (event) => {
 
 // listen for messages from the client
 self.addEventListener('message', (event) => {
-    console.log('[SW] message: ' + event.data);
+    const trustedOrigins = ['https://tracker.ironcloud.us/'];
+    if (trustedOrigins.includes(event.origin)) {
+        console.log('[SW] message from trusted origin: ' + event.data);
+    } else {
+        console.warn('[SW] message from untrusted origin: ' + event.origin);
+    }
 });
 
 //

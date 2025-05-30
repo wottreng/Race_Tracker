@@ -40,7 +40,7 @@ canvas {
     z-index: 1100;
 }
 #dataLogDisplay {
-    max-height: 50%;
+    max-height: 70%;
     overflow-y: auto;
     background: #333;
     font-family: monospace;

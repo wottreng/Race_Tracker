@@ -51,6 +51,11 @@ To run unit tests:
 npm test
 ```
 
+to develope front end tests:
+```bash
+npx cypress open
+```
+
 ## License
 
 [MIT License](LICENSE)
