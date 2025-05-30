@@ -21,20 +21,25 @@
 <body>
 <!-- Side panel tabs -->
 <div>
-    <div id="optionTab" class="side-tab1">
+    <div id="optionTab" class="side-tab side-tab1">
         <div class="tab-content">
             Options
         </div>
     </div>
-    <div id="logTab" class="side-tab">
+    <div id="logTab" class="side-tab side-tab2">
         <div class="tab-content">
             <span id="logStatus" class="status-indicator"></span>
             Data Logger
         </div>
     </div>
-    <div id="mapTab" class="side-tab2">
+    <div id="mapTab" class="side-tab side-tab3">
         <div class="tab-content">
             Map View
+        </div>
+    </div>
+    <div id="GraphDataTab" class="side-tab side-tab4">
+        <div class="tab-content">
+            Graph Data
         </div>
     </div>
 </div>
@@ -122,6 +127,19 @@
             </button>
         </div>
         <div id="map" class="map rounded" style="height: calc(100vh - 110px);"></div>
+    </div>
+</div>
+<!-- Graph Panel -->
+<div class="side-panel" id="graphPanel">
+    <div class="panel-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Graph Data</h5>
+        <button aria-label="Close" class="btn-close btn-close-white" id="closeGraphPanel"></button>
+    </div>
+    <div class="panel-body p-0">
+        <div class="p-3">
+            <h6 class="mb-3">Speed Over Time</h6>
+            <canvas id="graphChart" width="100%" height="200"></canvas>
+        </div>
     </div>
 </div>
 <!-- backdrop -->
