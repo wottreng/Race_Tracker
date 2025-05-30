@@ -212,9 +212,9 @@ function updatePosition(position) {
 
         const newLatLng = [latitude, longitude];
         // Update marker position and center map
-        MARKER.setLatLng(newLatLng);
+        map_struct.MARKER.setLatLng(newLatLng);
         if (update_map_view === true) {
-            MAP.setView(newLatLng);
+            map_struct.MAP.setView(newLatLng);
             document.querySelector('.map-loading-indicator').innerHTML =
                 '<span class="text-warning"></span>';
         }
@@ -352,7 +352,7 @@ function motionHandler(event) {
     );
 
     // Update max G-force
-    if (totalG > metircs.maxG) {
+    if (totalG > metrics.maxG) {
         metrics.maxG = totalG;
         maxGDisplay.innerText = maxG.toFixed(2).toString();
     }
