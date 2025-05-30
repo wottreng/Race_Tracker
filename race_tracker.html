@@ -2,47 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Race Tracker</title>
-    <link rel="manifest" href="manifest.json">
+    <link href="manifest.json" rel="manifest">
     <link href="static/css/bootstrap.css" rel="stylesheet">
     <link href="static/css/race_tracker.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
-    <script src="static/js/UI_utils.js" defer></script>
+    <link href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" rel="stylesheet"/>
+    <script defer src="static/js/min/chart.js"></script>
+    <script src="static/js/min/hammer.js"></script>
+    <script defer src="static/js/min/chart_zoom.js"></script>
+    <script defer src="static/js/UI_utils.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="static/js/min/bootstrap.js"></script>
-    <script src="static/js/index.js" defer></script>
-    <script src="static/js/map_utils.js" defer></script>
-    <script src="static/js/video_utils.js" defer></script>
-    <script src="static/js/sw_flow.js" defer></script>
-    <script src="static/js/race_tracker.js" defer></script>
-    <script src="static/js/app_utils.js" defer></script>
+    <script defer src="static/js/index.js"></script>
+    <script defer src="static/js/map_utils.js"></script>
+    <script defer src="static/js/video_utils.js"></script>
+    <script defer src="static/js/sw_flow.js"></script>
+    <script defer src="static/js/race_tracker.js"></script>
+    <script defer src="static/js/app_utils.js"></script>
 </head>
 <body>
 <!-- Side panel tabs -->
 <div>
-    <div id="optionTab" class="side-tab1">
+    <div class="side-tab side-tab1" id="optionTab">
         <div class="tab-content">
             Options
         </div>
     </div>
-    <div id="logTab" class="side-tab">
+    <div class="side-tab side-tab2" id="logTab">
         <div class="tab-content">
-            <span id="logStatus" class="status-indicator"></span>
+            <span class="status-indicator" id="logStatus"></span>
             Data Logger
         </div>
     </div>
-    <div id="mapTab" class="side-tab2">
+    <div class="side-tab side-tab3" id="mapTab">
         <div class="tab-content">
             Map View
         </div>
     </div>
+    <div class="side-tab side-tab4" id="GraphDataTab">
+        <div class="tab-content">
+            Graph Data
+        </div>
+    </div>
 </div>
 <!-- Option Panel -->
-<div id="optionPanel" class="side-panel">
-    <div class="panel-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Options</h5>
-        <button class="btn-close btn-close-white" id="closeOptionPanel" aria-label="Close"></button>
+<div class="side-panel" id="optionPanel">
+    <div class="panel-header d-flex justify-content-between align-items-center bg-primary bg-gradient rounded-top-4 px-3 py-2">
+        <h5 class="mb-0 fw-bold text-white"><i class="bi bi-graph-up-arrow me-2"></i>Options</h5>
+        <button aria-label="Close" class="btn-close btn-close-white" id="closeOptionPanel"></button>
     </div>
     <div class="panel-body">
         <div class="card mb-3 bg-dark">
@@ -79,36 +87,43 @@
     </div>
 </div>
 <!-- data logger side panel -->
-<div id="logPanel" class="side-panel">
-    <div class="panel-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Data Logger</h5>
-        <button class="btn-close btn-close-white" id="closeLogPanel" aria-label="Close"></button>
+<div class="side-panel" id="logPanel">
+    <div class="panel-header d-flex justify-content-between align-items-center bg-primary bg-gradient rounded-top-4 px-3 py-2">
+        <h5 class="mb-0 fw-bold text-white"><i class="bi bi-graph-up-arrow me-2"></i>Data Logger</h5>
+        <button aria-label="Close" class="btn-close btn-close-white" id="closeLogPanel"></button>
     </div>
     <div class="panel-body">
         <div class="d-flex flex-wrap justify-content-between">
             <div class="d-flex flex-column gap-2">
-                <button onclick="clearLog()" class="btn btn-outline-danger me-1 mb-2">Clear Log</button>
-                <button id="startLogBtn" onclick="manualStartLogging()" class="btn btn-success me-1 mb-2">Start Logging</button>
-                <button id="stopLogBtn" onclick="manualStopLogging()" class="btn btn-warning me-1 mb-2" style="display:none">Stop Logging</button>
+                <button class="btn btn-outline-danger me-1 mb-2" onclick="clearLog()">Clear Log</button>
+                <button class="btn btn-success me-1 mb-2" id="startLogBtn" onclick="manualStartLogging()">Start
+                    Logging
+                </button>
+                <button class="btn btn-warning me-1 mb-2" id="stopLogBtn" onclick="manualStopLogging()"
+                        style="display:none">Stop Logging
+                </button>
             </div>
             <div class="d-flex flex-column gap-2">
-                <button onclick="exportLog()" class="btn btn-primary mb-2">Export Log (CSV)</button>
-                <button onclick="exportLogAsVideo()" class="btn btn-primary mb-2">Export Log as Video</button>
+                <button class="btn btn-primary mb-2" onclick="exportLog()">Export Log (CSV)</button>
+                <button class="btn btn-primary mb-2" onclick="exportLogAsVideo()">Export Log as Video</button>
             </div>
         </div>
         <div class="form-check form-switch mt-2">
-            <input class="form-check-input" type="checkbox" id="autoLogToggle" onchange="toggleAutoLogging()" style="width: 2.5em; height: 1.25em;">
-            <label class="form-check-label ms-2 d-flex align-items-center" for="autoLogToggle" style="height: 1.25em;">Auto-start logging over 20 mph</label>
+            <input class="form-check-input" id="autoLogToggle" onchange="toggleAutoLogging()"
+                   style="width: 2.5em; height: 1.25em;"
+                   type="checkbox">
+            <label class="form-check-label ms-2 d-flex align-items-center" for="autoLogToggle" style="height: 1.25em;">Auto-start
+                logging over 20 mph</label>
         </div>
-        <div id="dataLogDisplay" class="mt-3 p-2 rounded"></div>
+        <div class="mt-3 p-2 rounded" id="dataLogDisplay"></div>
     </div>
 </div>
 
 <!-- Map Panel -->
-<div id="mapPanel" class="side-panel">
-    <div class="panel-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Live Map</h5>
-        <button class="btn-close btn-close-white" id="closeMapPanel" aria-label="Close"></button>
+<div class="side-panel" id="mapPanel">
+    <div class="panel-header d-flex justify-content-between align-items-center bg-primary bg-gradient rounded-top-4 px-3 py-2">
+        <h5 class="mb-0 fw-bold text-white"><i class="bi bi-graph-up-arrow me-2"></i>Live Map</h5>
+        <button aria-label="Close" class="btn-close btn-close-white" id="closeMapPanel"></button>
     </div>
     <div class="panel-body p-0">
         <div class="d-flex gap-2 p-2">
@@ -121,22 +136,54 @@
                 <span>Clear Map</span>
             </button>
         </div>
-        <div id="map" class="map rounded" style="height: calc(100vh - 110px);"></div>
+        <div class="map rounded" id="map" style="height: calc(100vh - 110px);"></div>
+    </div>
+</div>
+<!-- Graph Panel -->
+<div class="side-panel shadow-lg rounded-4 border border-primary bg-dark text-white" id="graphPanel">
+    <div class="panel-header d-flex justify-content-between align-items-center bg-primary bg-gradient rounded-top-4 px-3 py-2">
+        <h5 class="mb-0 fw-bold text-white"><i class="bi bi-graph-up-arrow me-2"></i>Graph Data</h5>
+        <button aria-label="Close" class="btn-close btn-close-white" id="closeGraphPanel"></button>
+    </div>
+    <div class="p-3">
+        <div class="d-flex gap-2 align-items-center mb-3">
+            <label for="graphSelect" class="form-label mb-0 me-2 fw-semibold">Select Data:</label>
+            <select class="form-select w-auto" id="graphSelect" style="min-width: 120px;">
+                <option value="speed">Speed</option>
+                <option value="gForce">G-Force</option>
+            </select>
+            <button class="btn btn-outline-info d-flex align-items-center option_btn" onclick="updateGraph()">
+                <i class="bi bi-bar-chart-line me-2"></i>
+                <span>Plot</span>
+            </button>
+        </div>
+        <div class="d-flex gap-2 align-items-center mb-3">
+            <button class="btn btn-outline-secondary d-flex align-items-center option_btn" onclick="resetZoom()">
+                <i class="bi bi-eraser me-2"></i>
+                <span>Reset Zoom</span>
+            </button>
+        </div>
+    </div>
+    <div class="panel-body p-3 pt-0" style="background: #181c20;">
+        <div id="chart_container" class="chart-container bg-black rounded-3 shadow-sm p-2" style="position: relative; width: 100%; height: 100%;">
+            <canvas id="graphCanvas" style="background: #181c20; display: block; height: 100%; width: 100%; max-width: 100%"></canvas>
+        </div>
     </div>
 </div>
 <!-- backdrop -->
-<div id="panelBackdrop" class="panel-backdrop"></div>
+<div class="panel-backdrop" id="panelBackdrop"></div>
 <!-- main UI -->
 <div class="container">
     <div class="d-flex align-items-center mb-3">
         <div class="me-auto">
-            <img src="static/images/race_tracker.png" alt="Logo" class="logo">
+            <img alt="Logo" class="logo" src="static/images/race_tracker.png">
         </div>
         <div class="flex-grow-1 text-center">
             <h1 class="mb-0 fw-bold"><small class="text-secondary">Tracker</small></h1>
         </div>
         <div class="ms-auto"></div>
-        <button id="installBtn" class="btn btn-primary d-none" type="button" onclick="promptInstall()" aria-label="Install App">
+        <button aria-label="Install App" class="btn btn-primary d-none" id="installBtn" onclick="promptInstall()"
+                type="button">
             <i class="bi bi-download me-2"></i>Install App
         </button>
     </div>
@@ -144,7 +191,7 @@
         <div class="card-header bg-gradient d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="bi bi-geo-alt-fill me-2"></i>GPS Position</h5>
             <div>
-                <button id="permissionBtn" class="btn btn-sm btn-warning me-1" onclick="requestPermission()">
+                <button class="btn btn-sm btn-warning me-1" id="permissionBtn" onclick="requestPermission()">
                     <i class="bi bi-shield-check me-1"></i>Fix Permission
                 </button>
             </div>
@@ -153,26 +200,31 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="data-group">
-                        <p class="data-item"><span class="data-label">Latitude:</span> <span id="Latitude"
-                                                                                             class="data-value">--</span>
+                        <p class="data-item"><span class="data-label">Latitude:</span> <span class="data-value"
+                                                                                             id="Latitude">--</span>
                         </p>
-                        <p class="data-item"><span class="data-label">Longitude:</span> <span id="Longitude"
-                                                                                              class="data-value">--</span>
+                        <p class="data-item"><span class="data-label">Longitude:</span> <span class="data-value"
+                                                                                              id="Longitude">--</span>
                         </p>
-                        <p class="data-item"><span class="data-label">Accuracy:</span> <span id="Accuracy"
-                                                                                             class="data-value">--</span><span> ft</span>
+                        <p class="data-item"><span class="data-label">Accuracy:</span> <span class="data-value"
+                                                                                             id="Accuracy">--</span><span> ft</span>
                         </p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="data-group">
-                        <p class="data-item"><span class="data-label">Altitude:</span> <span id="Altitude" class="data-value">--</span><span> ft</span></p>
-                        <p class="data-item"><span class="data-label">Speed: </span><span id="speed" class="data-value">--</span><span> mph</span></p>
-                        <p class="data-item highlight"><span class="data-label">Max Speed: </span> <span id="max_speed" class="data-value">--</span><span> mph</span></p>
+                        <p class="data-item"><span class="data-label">Altitude:</span> <span class="data-value"
+                                                                                             id="Altitude">--</span><span> ft</span>
+                        </p>
+                        <p class="data-item"><span class="data-label">Speed: </span><span class="data-value"
+                                                                                          id="speed">--</span><span> mph</span>
+                        </p>
+                        <p class="data-item highlight"><span class="data-label">Max Speed: </span> <span
+                                class="data-value" id="max_speed">--</span><span> mph</span></p>
                     </div>
                 </div>
             </div>
-            <p id="geoError" class="error small text-danger mt-2 visually-hidden"></p>
+            <p class="error small text-danger mt-2 visually-hidden" id="geoError"></p>
         </div>
     </div>
 
@@ -184,79 +236,82 @@
             <div class="row mb-3">
                 <div class="col-6">
                     <div class="data-group">
-                        <p id="gX" class="data-item"><span class="data-label">X-Axis:</span> <span class="data-value">-- G</span>
+                        <p class="data-item" id="gX"><span class="data-label">X-Axis:</span> <span
+                                class="data-value">-- G</span>
                         </p>
-                        <p id="gY" class="data-item"><span class="data-label">Y-Axis:</span> <span class="data-value">-- G</span>
+                        <p class="data-item" id="gY"><span class="data-label">Y-Axis:</span> <span
+                                class="data-value">-- G</span>
                         </p>
-                        <p id="gZ" class="data-item"><span class="data-label">Z-Axis:</span> <span class="data-value">-- G</span>
+                        <p class="data-item" id="gZ"><span class="data-label">Z-Axis:</span> <span
+                                class="data-value">-- G</span>
                         </p>
                     </div>
                 </div>
                 <div class="col-6">
                     <div class="data-group">
-                        <p class="data-item"><span class="data-label">Total:</span> <span id="gTotal"
-                                                                                          class="data-value">--</span><span> g</span>
+                        <p class="data-item"><span class="data-label">Total:</span> <span class="data-value"
+                                                                                          id="gTotal">--</span><span> g</span>
                         </p>
-                        <p class="data-item highlight"><span class="data-label">Max: </span><span id="maxG"
-                                                                                                  class="data-value">--</span><span> g</span>
+                        <p class="data-item highlight"><span class="data-label">Max: </span><span class="data-value"
+                                                                                                  id="maxG">--</span><span> g</span>
                         </p>
                     </div>
                 </div>
             </div>
             <div class="text-center">
-                <canvas id="tractionCanvas" width="300" height="300" class="rounded shadow-sm"></canvas>
+                <canvas class="rounded shadow-sm traction_canvas" height="300" id="tractionCanvas" width="300"></canvas>
             </div>
         </div>
     </div>
 </div>
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div aria-atomic="true" aria-live="assertive" class="toast" id="toast" role="alert">
         <div class="d-flex">
             <div class="toast-header">
                 <strong class="me-auto">Alert</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="toast" type="button"></button>
             </div>
             <div class="toast-body text-black"></div>
         </div>
     </div>
 </div>
-<div class="modal fade" id="importConfirmModal" tabindex="-1" aria-hidden="true">
+<div aria-hidden="true" class="modal fade" id="importConfirmModal" tabindex="-1">
     <div class="modal-dialog text-black">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Confirm Import</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
             </div>
             <div class="modal-body">
                 <p>Import <span id="number_of_data_points"></span> data points? This will replace existing data.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirmImport">Import</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                <button class="btn btn-primary" id="confirmImport" type="button">Import</button>
             </div>
         </div>
     </div>
 </div>
-<div class="modal" id="trackLapModal" tabindex="-1" aria-hidden="true">
+<div aria-hidden="true" class="modal" id="trackLapModal" tabindex="-1">
     <div class="modal-dialog modal-lg text-black">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Calculate Lap Times</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
             </div>
             <div class="modal-body">
                 <p>select your track</p>
                 <div class="form-group">
-                    <select id="trackSelect" class="form-select">
+                    <select class="form-select" id="trackSelect">
                     </select>
                 </div>
-                <button type="button" class="btn btn-primary" onclick="calculateTrackTimes()">Calculate</button>
+                <button class="btn btn-primary" onclick="calculateTrackTimes()" type="button">Calculate</button>
                 <div id="trackTimes"></div>
                 <div id="averageSpeed"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>

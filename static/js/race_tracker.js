@@ -174,6 +174,97 @@ window.speedKalmanFilter = new KalmanFilter({
     controlGain: 0.1
 });
 
+let dataLogChartInstance = null;
+
+function updateGraph() {
+    const type = document.getElementById('graphSelect').value;
+    const ctx = document.getElementById('graphCanvas').getContext('2d');
+
+    if (dataLogChartInstance) {
+        dataLogChartInstance.destroy();
+    }
+
+    let labels = [];
+    let data = [];
+    let label = '';
+
+    if (!Array.isArray(dataLog) || dataLog.length === 0) {
+        data = [];
+        labels = [];
+        label = 'No Data';
+    } else {
+        labels = dataLog.map(entry => entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : '');
+
+        if (type === 'speed') {
+            data = dataLog.map(entry => parseFloat(entry.speed_mph) || 0);
+            label = 'Speed (mph)';
+        } else if (type === 'gForce') {
+            data = dataLog.map(entry => parseFloat(entry.gForce) || 0);
+            label = 'G-Force (g)';
+        }
+    }
+
+    dataLogChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: label,
+                data: data,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true },
+                title: { display: false },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x',
+                        threshold: 10,
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                        },
+                        pinch: {
+                            enabled: true,
+                        },
+                        mode: 'x',
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: { display: true, text: 'Time' },
+                    ticks: {
+                        maxTicksLimit: 10,
+                        autoSkip: true
+                    }
+                },
+                y: {
+                    display: true,
+                    title: { display: true, text: label }
+                }
+            }
+        }
+    });
+}
+
+function resetZoom(){
+    if (dataLogChartInstance) {
+        dataLogChartInstance.resetZoom();
+    }
+}
+
+
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         KalmanFilter,
@@ -184,3 +275,4 @@ if (typeof module !== 'undefined' && module.exports) {
         calculateAverageSpeedOfLap,
     };
 }
+

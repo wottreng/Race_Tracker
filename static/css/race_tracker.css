@@ -26,7 +26,7 @@ body {
     display: inline-block;
     margin-left: 0.5rem;
 }
-canvas {
+.traction_canvas {
     width: 100%;
     max-width: 300px;
     display: block;
@@ -80,12 +80,9 @@ canvas {
     overflow-y: auto;
 }
 
-/* Tab styles - keep in fixed position */
-/* First tab - positioned at the top */
 .side-tab {
     position: fixed;
     right: 0;
-    top: 200px;
     transform: translateY(-50%) rotate(-90deg);
     transform-origin: right bottom;
     background: #0d6efd;
@@ -97,36 +94,20 @@ canvas {
     box-shadow: 0 -3px 5px rgba(0,0,0,0.2);
 }
 
-/* Second tab - positioned below first with 10px gap */
 .side-tab1 {
-    position: fixed;
-    right: 0;
     top: 100px;
-    transform: translateY(-50%) rotate(-90deg);
-    transform-origin: right bottom;
-    background: #0d6efd;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 8px 8px 0 0;
-    cursor: pointer;
-    z-index: 1049;
-    box-shadow: 0 -3px 5px rgba(0,0,0,0.2);
 }
 
-/* Third tab - positioned below second with 10px gap */
 .side-tab2 {
-    position: fixed;
-    right: 0;
+    top: 200px;
+}
+
+.side-tab3 {
     top: 360px;
-    transform: translateY(-50%) rotate(-90deg);
-    transform-origin: right bottom;
-    background: #0d6efd;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 8px 8px 0 0;
-    cursor: pointer;
-    z-index: 1049;
-    box-shadow: 0 -3px 5px rgba(0,0,0,0.2);
+}
+
+.side-tab4 {
+    top: 475px;
 }
 
 .side-tab .tab-content {

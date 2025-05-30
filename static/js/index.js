@@ -896,6 +896,24 @@ function add_event_listener_setup() {
         mapPanel.classList.remove('panel-active');
         backdrop.classList.remove('backdrop-active');
     });
+
+    // graph modal
+    const graphTab = document.getElementById('GraphDataTab');
+    const graphPanel = document.getElementById('graphPanel');
+    const closeGraphBtn = document.getElementById('closeGraphPanel');
+
+    // Open map panel when map tab is clicked
+    graphTab.addEventListener('click', function () {
+        graphPanel.classList.add('panel-active');
+        backdrop.classList.add('backdrop-active');
+    });
+
+    // Close map panel when close button is clicked
+    closeGraphBtn.addEventListener('click', function () {
+        graphPanel.classList.remove('panel-active');
+        backdrop.classList.remove('backdrop-active');
+    });
+
 }
 
 document.addEventListener('DOMContentLoaded', function () {
