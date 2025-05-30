@@ -56,11 +56,6 @@ to develope front end tests:
 npx cypress open
 ```
 
-to run front end tests headless:
-```bash
- npx http-server . & wait-on http://127.0.0.1:8080/race_tracker.html && npx cypress run && kill -9 $(ps -a | grep 'http-server' | awk '{print $1}')
- ```
-
 ## License
 
 [MIT License](LICENSE)

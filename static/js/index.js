@@ -528,9 +528,11 @@ function show_error(message) {
     }, 5000);
 }
 
-function toggleAutoLogging() {
+function toggleAutoLogging(silent = true) {
     autoLoggingEnabled = document.getElementById('autoLogToggle').checked;
-    showToast('Auto-logging ' + (autoLoggingEnabled ? 'enabled' : 'disabled'));
+    if (!silent) {
+        showToast('Auto-logging ' + (autoLoggingEnabled ? 'enabled' : 'disabled'));
+    }
     if (autoLoggingEnabled && !window.speedCheckInterval) {
         document.getElementById("logStatus").style.background = 'orange';
         window.speedCheckInterval = setInterval(() => {
@@ -559,7 +561,7 @@ function manualStartLogging() {
 
 function manualStopLogging() {
     document.getElementById('autoLogToggle').checked = false;
-    toggleAutoLogging()
+    toggleAutoLogging(true);
     stopLogging();
 }
 

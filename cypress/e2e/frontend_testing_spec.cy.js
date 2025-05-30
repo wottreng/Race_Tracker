@@ -46,7 +46,7 @@ describe('tracker frontend test', () => {
             cy.stub(win.navigator.geolocation, 'clearWatch').callsFake(geolocation.clearWatch);
 
             // Wait for map_struct to be initialized
-            cy.wait(2000);
+            cy.wait(1000);
 
             // Make sure map_struct.MARKER exists before stubbing
             if (win.map_struct && win.map_struct.MARKER) {
@@ -57,7 +57,7 @@ describe('tracker frontend test', () => {
         });
     });
 
-    it('open data logger tab', () => {
+    it('open data logger tab and test logging', () => {
         cy.wait(1000);
         // check that speed is not empty
         cy.get('#speed').should('not.be.empty');
@@ -72,5 +72,18 @@ describe('tracker frontend test', () => {
         cy.wait(1000);
         cy.get('button').contains('Clear Log').should('exist').click();
 
+    });
+
+    it('open options tab and test options', () => {
+        cy.get('#optionTab').contains('Options').should('exist').click();
+        cy.wait(500);
+        cy.get('[onclick="reset_GPS()"] > span').should('exist').click();
+        cy.get('#toast').should('exist');
+        cy.wait(1000);
+        cy.get('[onclick="resetMaxSpeed()"] > span').should('exist').click();
+        cy.wait(1000);
+        cy.get('[onclick="resetMaxG()"] > span').should('exist').click();
+        cy.get('#toast').should('exist');
+        cy.wait(1000);
     });
 });
