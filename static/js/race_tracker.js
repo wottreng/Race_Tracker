@@ -171,7 +171,7 @@ window.speedKalmanFilter = new KalmanFilter({
     initialValue: 0,
     processNoise: 0.2,     // Tune this: higher = more responsive but noisier
     measurementNoise: 0.5,  // Tune this: higher = smoother but more lag
-    controlGain: 0.2 // Tune this: how much acceleration affects speed, higher = more responsive
+    controlGain: 0.1 // Tune this: how much acceleration affects speed, higher = more responsive
 });
 
 let dataLogChartInstance = null;
