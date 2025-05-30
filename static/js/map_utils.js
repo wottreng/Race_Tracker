@@ -87,18 +87,18 @@ function plotDataLogOnMap() {
     // Clear all map content completely
     // Remove all layers except the base tile layer
     update_map_view = false;
-    MAP.eachLayer(function (layer) {
+    map_struct.MAP.eachLayer(function (layer) {
         if (!(layer instanceof L.TileLayer)) {
-            MAP.removeLayer(layer);
+            map_struct.MAP.removeLayer(layer);
         }
     });
 
     // Reset path reference and recreate empty path
-    path = L.polyline([], {color: 'blue', weight: 3}).addTo(MAP);
+    map_struct.path = L.polyline([], {color: 'blue', weight: 3}).addTo(map_struct.MAP);
 
     // Re-add the position marker if needed
-    if (MARKER) {
-        MARKER.addTo(MAP);
+    if (map_struct.MARKER) {
+        map_struct.MARKER.addTo(map_struct.MAP);
     }
 
     // Remove any existing legends
@@ -125,7 +125,7 @@ function plotDataLogOnMap() {
                     fillColor: segment.color,
                     fillOpacity: 0.8,
                     weight: 1
-                }).addTo(MAP);
+                }).addTo(map_struct.MAP);
             });
 
             // Add all points to array for bounds calculation
@@ -141,7 +141,7 @@ function plotDataLogOnMap() {
                 html: `<div style="background-color:#b6590e;color:white;padding:3px;border-radius:50%;width:24px;height:24px;text-align:center;line-height:18px;font-weight:bold;">G</div>`,
                 iconSize: [24, 24]
             })
-        }).addTo(MAP).bindPopup(`Max G-Force: ${maxGValue.toFixed(2)}G`);
+        }).addTo(map_struct.MAP).bindPopup(`Max G-Force: ${maxGValue.toFixed(2)}G`);
     }
 
     if (maxSpeedPoint) {
@@ -151,14 +151,14 @@ function plotDataLogOnMap() {
                 html: `<div style="background-color:#880f1a;color:white;padding:3px;border-radius:50%;width:24px;height:24px;text-align:center;line-height:18px;font-weight:bold;">S</div>`,
                 iconSize: [24, 24]
             })
-        }).addTo(MAP).bindPopup(`Max Speed: ${maxSpeedValue.toFixed(1)} mph`);
+        }).addTo(map_struct.MAP).bindPopup(`Max Speed: ${maxSpeedValue.toFixed(1)} mph`);
     }
 
     // Set map view to include all points
     if (allPoints.length > 0) {
         try {
             const bounds = L.latLngBounds(allPoints);
-            MAP.fitBounds(bounds, {padding: [30, 30]});
+            map_struct.MAP.fitBounds(bounds, {padding: [30, 30]});
 
             // Add a legend to the map
             const legend = L.control({position: 'topright'});
@@ -182,7 +182,7 @@ function plotDataLogOnMap() {
                 `;
                 return div;
             };
-            legend.addTo(MAP);
+            legend.addTo(map_struct.MAP);
 
             showToast("Track data plotted on map");
         } catch (e) {
@@ -196,18 +196,18 @@ function clearMap() {
     // Clear all map content completely
     // Remove all layers except the base tile layer
     update_map_view = true;
-    MAP.eachLayer(function (layer) {
+    map_struct.MAP.eachLayer(function (layer) {
         if (!(layer instanceof L.TileLayer)) {
-            MAP.removeLayer(layer);
+            map_struct.MAP.removeLayer(layer);
         }
     });
 
     // Reset path reference and recreate empty path
-    path = L.polyline([], {color: 'blue', weight: 3}).addTo(MAP);
+    map_struct.path = L.polyline([], {color: 'blue', weight: 3}).addTo(map_struct.MAP);
 
     // Re-add the position marker if needed
-    if (MARKER) {
-        MARKER.addTo(MAP);
+    if (map_struct.MARKER) {
+        map_struct.MARKER.addTo(map_struct.MAP);
     }
 
     // Remove any existing legends
