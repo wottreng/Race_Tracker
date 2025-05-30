@@ -169,8 +169,8 @@ class KalmanFilter {
 
 window.speedKalmanFilter = new KalmanFilter({
     initialValue: 0,
-    processNoise: 0.05,     // Tune this: higher = more responsive but noisier
-    measurementNoise: 0.8,  // Tune this: higher = smoother but more lag
+    processNoise: 0.2,     // Tune this: higher = more responsive but noisier
+    measurementNoise: 0.5,  // Tune this: higher = smoother but more lag
     controlGain: 0.1
 });
 
