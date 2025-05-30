@@ -1,4 +1,4 @@
-const { toggleAutoLogging, updatePosition } = require('../../static/js/index');
+const { calculateGForce, updateMaxG, toggleAutoLogging, updatePosition, resetMaxG } = require('../../static/js/index');
 const { haversineDistance } = require('../../static/js/map_utils');
 const fs = require('fs');
 const path = require('path');
@@ -141,4 +141,98 @@ describe("updatePosition", () => {
         updatePosition(position);
         expect(window.speedKalmanFilter.update).toHaveBeenCalledWith(0, expect.any(Number), 0);
     });
+});
+
+describe("resetMaxG", () => {
+    let maxGDisplay;
+
+    beforeEach(() => {
+        global.bootstrap = {
+            Toast: jest.fn().mockImplementation(() => ({
+                show: jest.fn()
+            }))
+        };
+        document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
+        maxGDisplay = document.getElementById('maxG');
+        global.showToast = jest.fn();
+    });
+
+    it("resets max G-force to 0.0", () => {
+        resetMaxG();
+        expect(maxGDisplay.innerText).toBe("0.0");
+    });
+});
+
+describe("updateMaxG", () => {
+    let maxGDisplay;
+
+    beforeEach(() => {
+        global.bootstrap = {
+            Toast: jest.fn().mockImplementation(() => ({
+                show: jest.fn()
+            }))
+        };
+        document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
+        maxGDisplay = document.getElementById('maxG');
+        global.metrics = {
+            maxG: 0.0
+        }
+        global.updateTractionCircle = {
+
+        }
+    });
+
+    it("updates max G-force when new value is greater", () => {
+        updateMaxG(1.23);
+        expect(maxGDisplay.innerText).toBe("1.23");
+    });
+});
+
+describe("calculateGForce", () => {
+    let gX, gY, gZ, gTotal;
+
+    beforeEach(() => {
+        global.bootstrap = {
+            Toast: jest.fn().mockImplementation(() => ({
+                show: jest.fn()
+            }))
+        };
+        document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
+        gX = document.getElementById("gX");
+        gY = document.getElementById("gY");
+        gZ = document.getElementById("gZ");
+        gTotal = document.getElementById("gTotal");
+        global.emphasizeTextUI = jest.fn();
+        global.deEmphasizeTextUI = jest.fn();
+
+    });
+
+    it("calculates total G-force correctly for zero acceleration values", () => {
+        let acceleration = {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0
+        }
+        const result = calculateGForce(acceleration,0, 0, 0);
+        expect(gX.innerText).toBe("X: 0.00 G");
+        expect(gY.innerText).toBe("Y: 0.00 G");
+        expect(gZ.innerText).toBe("Z: 0.00 G");
+        expect(gTotal.innerText).toBe("0.00");
+        expect(result).toBe(0);
+    });
+
+    it("calculates total G-force correctly for zero non-acceleration values", () => {
+        let acceleration = {
+            x: 1.0,
+            y: 1.0,
+            z: 1.0
+        }
+        const result = calculateGForce(acceleration,4, 2, 3);
+        expect(gX.innerText).toBe("X: 3.96 G");
+        expect(gY.innerText).toBe("Y: 1.98 G");
+        expect(gZ.innerText).toBe("Z: 2.97 G");
+        expect(gTotal.innerText).toBe("5.33");
+        expect(result).toBeCloseTo(5.33, 2)
+    });
+
 });

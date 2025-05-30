@@ -307,38 +307,43 @@ function motionHandler(event) {
         showToast("Motion event missing acceleration data");
         return;
     }
+    totalG = calculateGForce(event.acceleration, currentGForce.x, currentGForce.y, currentGForce.z);
+    updateMaxG(totalG);
+    updateTractionCircle();
+}
+
+function calculateGForce(acceleration, g_force_x, g_force_y, g_force_z) {
     // Convert acceleration to G-forces (9.8 m/s² = 1G)
     // Apply low-pass filter: newValue = alpha * currentValue + (1 - alpha) * oldValue
     let alpha = 0.01; // Lower alpha = more smoothing but more lag
-    if (event.acceleration.x === 0 && event.acceleration.y === 0 && event.acceleration.z === 0) {
+    if (acceleration.x === 0 && acceleration.y === 0 && acceleration.z === 0) {
         alpha = 0.1; // Increase alpha for no movement
     }
-    currentGForce.x = alpha * (event.acceleration.x / 9.8) + (1 - alpha) * (currentGForce.x || 0);
-    currentGForce.y = alpha * (event.acceleration.y / 9.8) + (1 - alpha) * (currentGForce.y || 0);
-    currentGForce.z = alpha * (event.acceleration.z / 9.8) + (1 - alpha) * (currentGForce.z || 0);
+    g_force_x = alpha * (acceleration.x / 9.8) + (1 - alpha) * (g_force_x || 0);
+    g_force_y = alpha * (acceleration.y / 9.8) + (1 - alpha) * (g_force_y || 0);
+    g_force_z = alpha * (acceleration.z / 9.8) + (1 - alpha) * (g_force_z || 0);
 
     // Update display
     const gX = document.getElementById('gX');
     const gY = document.getElementById('gY');
     const gZ = document.getElementById('gZ');
     const gTotal = document.getElementById('gTotal');
-    const maxGDisplay = document.getElementById('maxG');
     // update UI values
-    gX.innerText = `X: ${currentGForce.x.toFixed(2)} G`;
-    gY.innerText = `Y: ${currentGForce.y.toFixed(2)} G`;
-    gZ.innerText = `Z: ${currentGForce.z.toFixed(2)} G`;
-    gTotal.innerText = Math.sqrt(Math.pow(currentGForce.x, 2) + Math.pow(currentGForce.y, 2) + Math.pow(currentGForce.z, 2)).toFixed(2).toString();
-    if (currentGForce.x > 0.7) {
+    gX.innerText = `X: ${g_force_x.toFixed(2)} G`;
+    gY.innerText = `Y: ${g_force_y.toFixed(2)} G`;
+    gZ.innerText = `Z: ${g_force_z.toFixed(2)} G`;
+    gTotal.innerText = Math.sqrt(Math.pow(g_force_x, 2) + Math.pow(g_force_y, 2) + Math.pow(g_force_z, 2)).toFixed(2).toString();
+    if (g_force_x > 0.7) {
         emphasizeTextUI("gX");
     } else {
         deEmphasizeTextUI("gX");
     }
-    if (currentGForce.y > 0.7) {
+    if (g_force_y > 0.7) {
         emphasizeTextUI("gY");
     } else {
         deEmphasizeTextUI("gY");
     }
-    if (currentGForce.z > 0.7) {
+    if (g_force_z > 0.7) {
         emphasizeTextUI("gZ");
     } else {
         deEmphasizeTextUI("gZ");
@@ -346,18 +351,19 @@ function motionHandler(event) {
 
     // Calculate total G-force
     const totalG = Math.sqrt(
-        Math.pow(currentGForce.x, 2) +
-        Math.pow(currentGForce.y, 2) +
-        Math.pow(currentGForce.z, 2)
+        Math.pow(g_force_x, 2) +
+        Math.pow(g_force_y, 2) +
+        Math.pow(g_force_z, 2)
     );
+    return totalG;
+}
 
-    // Update max G-force
-    if (totalG > metrics.maxG) {
-        metrics.maxG = totalG;
-        maxGDisplay.innerHTML = metrics.maxG.toFixed(2).toString();
+function updateMaxG(new_g_force) {
+    // Update max G-force if new value is greater
+    if (new_g_force > metrics.maxG) {
+        metrics.maxG = new_g_force;
+        document.getElementById('maxG').innerText = metrics.maxG.toFixed(2);
     }
-
-    updateTractionCircle();
 }
 
 function resetMaxG() {
@@ -926,6 +932,9 @@ document.addEventListener('DOMContentLoaded', function () {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         toggleAutoLogging,
-        updatePosition
+        updatePosition,
+        resetMaxG,
+        updateMaxG,
+        calculateGForce,
     };
 }
