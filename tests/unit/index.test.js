@@ -177,9 +177,6 @@ describe("updateMaxG", () => {
         global.metrics = {
             maxG: 0.0
         }
-        global.updateTractionCircle = {
-
-        }
     });
 
     it("updates max G-force when new value is greater", () => {
