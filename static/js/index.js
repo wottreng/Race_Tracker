@@ -656,9 +656,9 @@ function updateDataLogDisplay() {
     let html = '<table style="width: 100%; border-collapse: collapse;">';
 
     // Add headers
-    html += '<tr style="border-bottom: 1px solid #555;">';
+    html += '<tr style="border-bottom: 1px solid #555; position: sticky; top: 0; background: #222; z-index: 2;">';
     Object.keys(dataLog[0]).forEach(key => {
-        html += `<th style="padding: 4px; text-align: left; color: #0af;">${key}</th>`;
+        html += `<th style="padding: 4px; text-align: left; color: #0af; background: #222; position: sticky; top: 0; z-index: 2;">${key}</th>`;
     });
     html += '</tr>';
 
