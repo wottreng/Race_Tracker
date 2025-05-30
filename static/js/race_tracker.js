@@ -176,14 +176,6 @@ window.speedKalmanFilter = new KalmanFilter({
 
 let dataLogChartInstance = null;
 
-// Initialize the graph when the graph panel is opened
-function initializeGraph() {
-    // If there's already data in the dataLog, show it
-    if (Array.isArray(dataLog) && dataLog.length > 0) {
-        updateGraph();
-    }
-}
-
 function updateGraph() {
     const type = document.getElementById('graphSelect').value;
     const ctx = document.getElementById('graphCanvas').getContext('2d');
@@ -247,6 +239,15 @@ function updateGraph() {
             }
         }
     });
+}
+
+function clearGraph() {
+    if (dataLogChartInstance) {
+        dataLogChartInstance.destroy();
+        dataLogChartInstance = null;
+    }
+    const ctx = document.getElementById('graphCanvas').getContext('2d');
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 }
 
 
