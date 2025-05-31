@@ -12,7 +12,7 @@ let lastGpsUpdate = null;
 let lastPosition = null;
 let totalPointsRecorded = 0;
 let data_point = {};
-let currentGForce = {x: 0, y: 0, z: 0};
+window.currentGForce = {x: 0, y: 0, z: 0};
 const auto_logging_speed = 20; // mph
 let update_map_view = true;
 let wakeLock = null;
@@ -178,7 +178,7 @@ function updatePosition(position) {
         let smoothed_speed = window.speedKalmanFilter.update(
             speed_mph,
             position.timestamp,
-            currentGForce.y  // optional: use acceleration data if available
+            window.currentGForce.y  // optional: use acceleration data if available
         );
         smoothed_speed = parseFloat(smoothed_speed.toFixed(1));
 
@@ -307,38 +307,46 @@ function motionHandler(event) {
         showToast("Motion event missing acceleration data");
         return;
     }
+    totalG = calculateGForce(event.acceleration, window.currentGForce.x, window.currentGForce.y, window.currentGForce.z);
+    updateMaxG(totalG);
+    updateTractionCircle();
+}
+
+function calculateGForce(acceleration, g_force_x, g_force_y, g_force_z) {
     // Convert acceleration to G-forces (9.8 m/s² = 1G)
     // Apply low-pass filter: newValue = alpha * currentValue + (1 - alpha) * oldValue
     let alpha = 0.01; // Lower alpha = more smoothing but more lag
-    if (event.acceleration.x === 0 && event.acceleration.y === 0 && event.acceleration.z === 0) {
+    if (acceleration.x === 0 && acceleration.y === 0 && acceleration.z === 0) {
         alpha = 0.1; // Increase alpha for no movement
     }
-    currentGForce.x = alpha * (event.acceleration.x / 9.8) + (1 - alpha) * (currentGForce.x || 0);
-    currentGForce.y = alpha * (event.acceleration.y / 9.8) + (1 - alpha) * (currentGForce.y || 0);
-    currentGForce.z = alpha * (event.acceleration.z / 9.8) + (1 - alpha) * (currentGForce.z || 0);
+    g_force_x = alpha * (acceleration.x / 9.8) + (1 - alpha) * (g_force_x || 0);
+    g_force_y = alpha * (acceleration.y / 9.8) + (1 - alpha) * (g_force_y || 0);
+    g_force_z = alpha * (acceleration.z / 9.8) + (1 - alpha) * (g_force_z || 0);
+    window.currentGForce.x = g_force_x;
+    window.currentGForce.y = g_force_y;
+    window.currentGForce.z = g_force_z;
 
     // Update display
     const gX = document.getElementById('gX');
     const gY = document.getElementById('gY');
     const gZ = document.getElementById('gZ');
     const gTotal = document.getElementById('gTotal');
-    const maxGDisplay = document.getElementById('maxG');
     // update UI values
-    gX.innerText = `X: ${currentGForce.x.toFixed(2)} G`;
-    gY.innerText = `Y: ${currentGForce.y.toFixed(2)} G`;
-    gZ.innerText = `Z: ${currentGForce.z.toFixed(2)} G`;
-    gTotal.innerText = Math.sqrt(Math.pow(currentGForce.x, 2) + Math.pow(currentGForce.y, 2) + Math.pow(currentGForce.z, 2)).toFixed(2).toString();
-    if (currentGForce.x > 0.7) {
+    gX.innerText = `X: ${g_force_x.toFixed(2)} G`;
+    gY.innerText = `Y: ${g_force_y.toFixed(2)} G`;
+    gZ.innerText = `Z: ${g_force_z.toFixed(2)} G`;
+    gTotal.innerText = Math.sqrt(Math.pow(g_force_x, 2) + Math.pow(g_force_y, 2) + Math.pow(g_force_z, 2)).toFixed(2).toString();
+    if (g_force_x > 0.7) {
         emphasizeTextUI("gX");
     } else {
         deEmphasizeTextUI("gX");
     }
-    if (currentGForce.y > 0.7) {
+    if (g_force_y > 0.7) {
         emphasizeTextUI("gY");
     } else {
         deEmphasizeTextUI("gY");
     }
-    if (currentGForce.z > 0.7) {
+    if (g_force_z > 0.7) {
         emphasizeTextUI("gZ");
     } else {
         deEmphasizeTextUI("gZ");
@@ -346,18 +354,19 @@ function motionHandler(event) {
 
     // Calculate total G-force
     const totalG = Math.sqrt(
-        Math.pow(currentGForce.x, 2) +
-        Math.pow(currentGForce.y, 2) +
-        Math.pow(currentGForce.z, 2)
+        Math.pow(g_force_x, 2) +
+        Math.pow(g_force_y, 2) +
+        Math.pow(g_force_z, 2)
     );
+    return totalG;
+}
 
-    // Update max G-force
-    if (totalG > metrics.maxG) {
-        metrics.maxG = totalG;
-        maxGDisplay.innerText = maxG.toFixed(2).toString();
+function updateMaxG(new_g_force) {
+    // Update max G-force if new value is greater
+    if (new_g_force > metrics.maxG) {
+        metrics.maxG = new_g_force;
+        document.getElementById('maxG').innerText = metrics.maxG.toFixed(2);
     }
-
-    updateTractionCircle();
 }
 
 function resetMaxG() {
@@ -418,8 +427,8 @@ function updateTractionCircle() {
     tractionCtx.fillText("2g", tractionCenterX + 100, tractionCenterY - 5);
 
     // Draw G-force dot
-    const dotX = tractionCenterX + (currentGForce.x * 50);
-    const dotY = tractionCenterY - (currentGForce.y * 50);
+    const dotX = tractionCenterX + (window.currentGForce.x * 50);
+    const dotY = tractionCenterY - (window.currentGForce.y * 50);
     tractionCtx.beginPath();
     tractionCtx.arc(dotX, dotY, 8, 0, 2 * Math.PI);
     tractionCtx.fillStyle = '#0af';
@@ -618,13 +627,13 @@ function recordDataPoint() {
             accuracy_ft: data_point['accuracy_ft'].toFixed(1),
             speed_mph: data_point['speed_mph'],
             gForce: Math.sqrt(
-                Math.pow(currentGForce.x, 2) +
-                Math.pow(currentGForce.y, 2) +
-                Math.pow(currentGForce.z, 2)
+                Math.pow(window.currentGForce.x, 2) +
+                Math.pow(window.currentGForce.y, 2) +
+                Math.pow(window.currentGForce.z, 2)
             ) || 0,
-            gX: currentGForce.x || 0,
-            gY: currentGForce.y || 0,
-            gZ: currentGForce.z || 0
+            gX: window.currentGForce.x || 0,
+            gY: window.currentGForce.y || 0,
+            gZ: window.currentGForce.z || 0
         };
 
         logData(_data_point);
@@ -926,6 +935,9 @@ document.addEventListener('DOMContentLoaded', function () {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         toggleAutoLogging,
-        updatePosition
+        updatePosition,
+        resetMaxG,
+        updateMaxG,
+        calculateGForce,
     };
 }

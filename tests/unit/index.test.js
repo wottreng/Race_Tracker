@@ -1,19 +1,35 @@
-const { toggleAutoLogging, updatePosition } = require('../../static/js/index');
+let { calculateGForce, updateMaxG, toggleAutoLogging, updatePosition, resetMaxG } = require('../../static/js/index');
 const { haversineDistance } = require('../../static/js/map_utils');
 const fs = require('fs');
 const path = require('path');
 
+beforeAll(() => {
+    // This runs once before all tests in the file
+    window.bootstrap = {
+        Toast: jest.fn().mockImplementation(() => ({
+            show: jest.fn()
+        }))
+    };
+    // Load HTML once for all tests
+    document.body.innerHTML = fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
+
+    // Set up any other global mocks or configuration needed for all tests
+    window.showToast = jest.fn();
+    window.emphasizeTextUI = jest.fn();
+    window.deEmphasizeTextUI = jest.fn();
+});
+
+// You can also add an afterAll if needed
+afterAll(() => {
+    // Clean up any global resources
+    document.body.innerHTML = '';
+    jest.clearAllMocks();
+});
 
 describe("toggleAutoLogging", () => {
     let autoLogToggle, logStatus, speedCheckInterval;
 
     beforeEach(() => {
-        global.bootstrap = {
-            Toast: jest.fn().mockImplementation(() => ({
-                show: jest.fn()
-            }))
-        };
-        document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
         autoLogToggle = document.getElementById("autoLogToggle");
         logStatus = document.getElementById("logStatus");
         window.data_point = { speed_mph: 0 };
@@ -84,7 +100,6 @@ describe("updatePosition", () => {
         };
         window.haversineDistance = haversineDistance;
         currentGForce = { x: 0, y: 0, z: 0 };
-        document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
         window.map_struct = {
             MARKER : {
                 setPosition: jest.fn(),
@@ -96,7 +111,6 @@ describe("updatePosition", () => {
     });
 
     afterEach(() => {
-        document.body.innerHTML = '';
         window.speedKalmanFilter.update.mockClear();
     });
 
@@ -141,4 +155,85 @@ describe("updatePosition", () => {
         updatePosition(position);
         expect(window.speedKalmanFilter.update).toHaveBeenCalledWith(0, expect.any(Number), 0);
     });
+});
+
+describe("resetMaxG", () => {
+    let maxGDisplay;
+
+    beforeEach(() => {
+        maxGDisplay = document.getElementById('maxG');
+    });
+
+    it("resets max G-force to 0.0", () => {
+        resetMaxG();
+        expect(maxGDisplay.innerText).toBe("0.0");
+    });
+});
+
+describe("updateMaxG", () => {
+    let maxGDisplay;
+
+    beforeEach(() => {
+        maxGDisplay = document.getElementById('maxG');
+        window.metrics = {
+            maxG: 0.0
+        }
+    });
+
+    it("updates max G-force when new value is greater", () => {
+        updateMaxG(1.23);
+        expect(maxGDisplay.innerText).toBe("1.23");
+    });
+});
+
+describe("calculateGForce", () => {
+    let gX, gY, gZ, gTotal;
+
+    beforeEach(() => {
+        gX = document.getElementById("gX");
+        gY = document.getElementById("gY");
+        gZ = document.getElementById("gZ");
+        gTotal = document.getElementById("gTotal");
+        window.currentGForce = {
+            x: 0.2,
+            y: 0,
+            z: 0
+        }
+
+    });
+
+    it("calculates total G-force correctly for zero acceleration values", () => {
+        let acceleration = {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0
+        }
+        const result = calculateGForce(acceleration,0, 0, 0);
+        expect(gX.innerText).toBe("X: 0.00 G");
+        expect(gY.innerText).toBe("Y: 0.00 G");
+        expect(gZ.innerText).toBe("Z: 0.00 G");
+        expect(gTotal.innerText).toBe("0.00");
+        expect(result).toBe(0);
+        expect(window.currentGForce.x).toBeCloseTo(0.00, 2);
+        expect(window.currentGForce.y).toBeCloseTo(0.00, 2);
+        expect(window.currentGForce.z).toBeCloseTo(0.00, 2);
+    });
+
+    it("calculates total G-force correctly for zero non-acceleration values", () => {
+        let acceleration = {
+            x: 1.0,
+            y: 1.0,
+            z: 1.0
+        }
+        const result = calculateGForce(acceleration,4, 2, 3);
+        expect(gX.innerText).toBe("X: 3.96 G");
+        expect(gY.innerText).toBe("Y: 1.98 G");
+        expect(gZ.innerText).toBe("Z: 2.97 G");
+        expect(gTotal.innerText).toBe("5.33");
+        expect(result).toBeCloseTo(5.33, 2)
+        expect(window.currentGForce.x).toBeCloseTo(3.96, 2);
+        expect(window.currentGForce.y).toBeCloseTo(1.98, 2);
+        expect(window.currentGForce.z).toBeCloseTo(2.97, 2);
+    });
+
 });

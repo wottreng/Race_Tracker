@@ -5,6 +5,13 @@ describe('tracker frontend test', () => {
 
     });
 
+    it('test open graph tab', () => {
+        cy.get('#GraphDataTab > .tab-content').should('exist').click();
+        cy.wait(1000);
+        cy.get('#graphPanel > :nth-child(2) > :nth-child(1) > .btn').should('exist').click();
+        cy.get(':nth-child(2) > :nth-child(2) > .btn').should('exist').click();
+    });
+
     it('open map tab and test map', () => {
         cy.get('#mapTab > .tab-content').should('exist').click();
         cy.wait(1000);
@@ -21,8 +28,8 @@ describe('tracker frontend test', () => {
         cy.get('#logTab').contains('Data Logger').should('exist').click();
         cy.wait(1000);
         cy.get('#startLogBtn').contains("Start Logging").should('exist').click();
-        cy.wait(1000);
-        cy.get('#stopLogBtn').contains('Stop Logging').should('exist').click();
+        cy.wait(2000);
+        cy.get('#stopLogBtn').should('be.visible').contains('Stop Logging').should('exist').click();
         cy.get('div').contains('Data Logger').should('exist');
         cy.wait(1000);
         cy.get('button').contains('Clear Log').should('exist').click();
