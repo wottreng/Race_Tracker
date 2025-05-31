@@ -3,17 +3,33 @@ const { haversineDistance } = require('../../static/js/map_utils');
 const fs = require('fs');
 const path = require('path');
 
+beforeAll(() => {
+    // This runs once before all tests in the file
+    window.bootstrap = {
+        Toast: jest.fn().mockImplementation(() => ({
+            show: jest.fn()
+        }))
+    };
+    // Load HTML once for all tests
+    document.body.innerHTML = fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
+
+    // Set up any other global mocks or configuration needed for all tests
+    window.showToast = jest.fn();
+    window.emphasizeTextUI = jest.fn();
+    window.deEmphasizeTextUI = jest.fn();
+});
+
+// You can also add an afterAll if needed
+afterAll(() => {
+    // Clean up any global resources
+    document.body.innerHTML = '';
+    jest.clearAllMocks();
+});
 
 describe("toggleAutoLogging", () => {
     let autoLogToggle, logStatus, speedCheckInterval;
 
     beforeEach(() => {
-        global.bootstrap = {
-            Toast: jest.fn().mockImplementation(() => ({
-                show: jest.fn()
-            }))
-        };
-        document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
         autoLogToggle = document.getElementById("autoLogToggle");
         logStatus = document.getElementById("logStatus");
         window.data_point = { speed_mph: 0 };
@@ -84,7 +100,6 @@ describe("updatePosition", () => {
         };
         window.haversineDistance = haversineDistance;
         currentGForce = { x: 0, y: 0, z: 0 };
-        document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
         window.map_struct = {
             MARKER : {
                 setPosition: jest.fn(),
@@ -96,7 +111,6 @@ describe("updatePosition", () => {
     });
 
     afterEach(() => {
-        document.body.innerHTML = '';
         window.speedKalmanFilter.update.mockClear();
     });
 
@@ -147,14 +161,7 @@ describe("resetMaxG", () => {
     let maxGDisplay;
 
     beforeEach(() => {
-        global.bootstrap = {
-            Toast: jest.fn().mockImplementation(() => ({
-                show: jest.fn()
-            }))
-        };
-        document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
         maxGDisplay = document.getElementById('maxG');
-        global.showToast = jest.fn();
     });
 
     it("resets max G-force to 0.0", () => {
@@ -167,14 +174,8 @@ describe("updateMaxG", () => {
     let maxGDisplay;
 
     beforeEach(() => {
-        global.bootstrap = {
-            Toast: jest.fn().mockImplementation(() => ({
-                show: jest.fn()
-            }))
-        };
-        document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
         maxGDisplay = document.getElementById('maxG');
-        global.metrics = {
+        window.metrics = {
             maxG: 0.0
         }
     });
@@ -189,18 +190,10 @@ describe("calculateGForce", () => {
     let gX, gY, gZ, gTotal;
 
     beforeEach(() => {
-        global.bootstrap = {
-            Toast: jest.fn().mockImplementation(() => ({
-                show: jest.fn()
-            }))
-        };
-        document.body.innerHTML =  fs.readFileSync(path.resolve(__dirname, '../../race_tracker.html'), 'utf8');
         gX = document.getElementById("gX");
         gY = document.getElementById("gY");
         gZ = document.getElementById("gZ");
         gTotal = document.getElementById("gTotal");
-        global.emphasizeTextUI = jest.fn();
-        global.deEmphasizeTextUI = jest.fn();
         window.currentGForce = {
             x: 0.2,
             y: 0,

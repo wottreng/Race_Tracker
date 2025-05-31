@@ -29,7 +29,7 @@ describe('tracker frontend test', () => {
         cy.wait(1000);
         cy.get('#startLogBtn').contains("Start Logging").should('exist').click();
         cy.wait(2000);
-        cy.get('#stopLogBtn').contains('Stop Logging').should('exist').click();
+        cy.get('#stopLogBtn').should('be.visible').contains('Stop Logging').should('exist').click();
         cy.get('div').contains('Data Logger').should('exist');
         cy.wait(1000);
         cy.get('button').contains('Clear Log').should('exist').click();
