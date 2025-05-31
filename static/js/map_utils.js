@@ -21,17 +21,17 @@ function processDataLogSegments(dataLog) {
     let maxGValue = 0;
     let maxSpeedValue = 0;
     const segments = {
-        speed_0_10: {points: [], color: 'rgb(1,90,174)'},
-        speed_10_20: {points: [], color: 'rgb(43,111,182)'},
-        speed_20_30: {points: [], color: 'rgb(95,142,225)'},
-        speed_30_40: {points: [], color: 'rgb(145,175,225)'},
-        speed_40_50: {points: [], color: 'rgb(253,180,180)'},
-        speed_50_60: {points: [], color: 'rgb(255,130,130)'},
-        speed_60_70: {points: [], color: 'rgb(255,100,100)'},
-        speed_70_80: {points: [], color: 'rgb(255,70,70)'},
-        speed_80_90: {points: [], color: 'rgb(200,47,47)'},
-        speed_90_100: {points: [], color: 'rgb(168,21,21)'},
-        veryFast: {points: [], color: 'rgb(115,2,2)'},
+        speed_0_10: {points: [], color: 'rgb(0, 60, 170)'},
+        speed_10_20: {points: [], color: 'rgb(0, 90, 170)'},
+        speed_20_30: {points: [], color: 'rgb(0, 120, 170)'},
+        speed_30_40: {points: [], color: 'rgb(0, 150, 170)'},
+        speed_40_50: {points: [], color: 'rgb(0, 180, 170)'},
+        speed_50_60: {points: [], color: 'rgb(0, 210, 170)'},
+        speed_60_70: {points: [], color: 'rgb(255, 210, 0)'},
+        speed_70_80: {points: [], color: 'rgb(255, 170, 0)'},
+        speed_80_90: {points: [], color: 'rgb(255, 120, 0)'},
+        speed_90_100: {points: [], color: 'rgb(255, 70, 0)'},
+        veryFast: {points: [], color: 'rgb(200, 0, 0)'},
     }
 
     dataLog.forEach(point => {
@@ -169,16 +169,16 @@ function plotDataLogOnMap() {
                 div.style.borderRadius = '4px';
                 div.innerHTML = `
                     <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_0_10.color};"></span> 0-10 mph</div>
-                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_10_20.color}"></span> 10-20 mph</div>
-                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_20_30.color}"></span> 20-30 mph</div>
-                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_30_40.color}"></span> 30-40 mph</div>
-                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_40_50.color}"></span> 40-50 mph</div>
-                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_50_60.color}"></span> 50-60 mph</div>
-                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_60_70.color}"></span> 60-70 mph</div>
-                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_70_80.color}"></span> 70-80 mph</div>
-                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_80_90.color}"></span> 80-90 mph</div>
-                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_90_100.color}"></span> 90-100 mph</div>
-                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.veryFast.color}"></span> 100+ mph</div>
+                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_10_20.color};"></span> 10-20 mph</div>
+                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_20_30.color};"></span> 20-30 mph</div>
+                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_30_40.color};"></span> 30-40 mph</div>
+                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_40_50.color};"></span> 40-50 mph</div>
+                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_50_60.color};"></span> 50-60 mph</div>
+                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_60_70.color};"></span> 60-70 mph</div>
+                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_70_80.color};"></span> 70-80 mph</div>
+                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_80_90.color};"></span> 80-90 mph</div>
+                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.speed_90_100.color};"></span> 90-100 mph</div>
+                    <div class="map_text"><span style="display:inline-block;width:12px;height:12px;background-color:${segments.veryFast.color};"></span> 100+ mph</div>
                 `;
                 return div;
             };
