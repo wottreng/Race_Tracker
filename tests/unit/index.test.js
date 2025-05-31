@@ -1,4 +1,4 @@
-const { calculateGForce, updateMaxG, toggleAutoLogging, updatePosition, resetMaxG } = require('../../static/js/index');
+let { calculateGForce, updateMaxG, toggleAutoLogging, updatePosition, resetMaxG } = require('../../static/js/index');
 const { haversineDistance } = require('../../static/js/map_utils');
 const fs = require('fs');
 const path = require('path');
@@ -201,6 +201,11 @@ describe("calculateGForce", () => {
         gTotal = document.getElementById("gTotal");
         global.emphasizeTextUI = jest.fn();
         global.deEmphasizeTextUI = jest.fn();
+        window.currentGForce = {
+            x: 0.2,
+            y: 0,
+            z: 0
+        }
 
     });
 
@@ -216,6 +221,9 @@ describe("calculateGForce", () => {
         expect(gZ.innerText).toBe("Z: 0.00 G");
         expect(gTotal.innerText).toBe("0.00");
         expect(result).toBe(0);
+        expect(window.currentGForce.x).toBeCloseTo(0.00, 2);
+        expect(window.currentGForce.y).toBeCloseTo(0.00, 2);
+        expect(window.currentGForce.z).toBeCloseTo(0.00, 2);
     });
 
     it("calculates total G-force correctly for zero non-acceleration values", () => {
@@ -230,6 +238,9 @@ describe("calculateGForce", () => {
         expect(gZ.innerText).toBe("Z: 2.97 G");
         expect(gTotal.innerText).toBe("5.33");
         expect(result).toBeCloseTo(5.33, 2)
+        expect(window.currentGForce.x).toBeCloseTo(3.96, 2);
+        expect(window.currentGForce.y).toBeCloseTo(1.98, 2);
+        expect(window.currentGForce.z).toBeCloseTo(2.97, 2);
     });
 
 });

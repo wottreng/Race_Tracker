@@ -12,7 +12,7 @@ let lastGpsUpdate = null;
 let lastPosition = null;
 let totalPointsRecorded = 0;
 let data_point = {};
-let currentGForce = {x: 0, y: 0, z: 0};
+window.currentGForce = {x: 0, y: 0, z: 0};
 const auto_logging_speed = 20; // mph
 let update_map_view = true;
 let wakeLock = null;
@@ -178,7 +178,7 @@ function updatePosition(position) {
         let smoothed_speed = window.speedKalmanFilter.update(
             speed_mph,
             position.timestamp,
-            currentGForce.y  // optional: use acceleration data if available
+            window.currentGForce.y  // optional: use acceleration data if available
         );
         smoothed_speed = parseFloat(smoothed_speed.toFixed(1));
 
@@ -307,7 +307,7 @@ function motionHandler(event) {
         showToast("Motion event missing acceleration data");
         return;
     }
-    totalG = calculateGForce(event.acceleration, currentGForce.x, currentGForce.y, currentGForce.z);
+    totalG = calculateGForce(event.acceleration, window.currentGForce.x, window.currentGForce.y, window.currentGForce.z);
     updateMaxG(totalG);
     updateTractionCircle();
 }
@@ -322,6 +322,9 @@ function calculateGForce(acceleration, g_force_x, g_force_y, g_force_z) {
     g_force_x = alpha * (acceleration.x / 9.8) + (1 - alpha) * (g_force_x || 0);
     g_force_y = alpha * (acceleration.y / 9.8) + (1 - alpha) * (g_force_y || 0);
     g_force_z = alpha * (acceleration.z / 9.8) + (1 - alpha) * (g_force_z || 0);
+    window.currentGForce.x = g_force_x;
+    window.currentGForce.y = g_force_y;
+    window.currentGForce.z = g_force_z;
 
     // Update display
     const gX = document.getElementById('gX');
@@ -424,8 +427,8 @@ function updateTractionCircle() {
     tractionCtx.fillText("2g", tractionCenterX + 100, tractionCenterY - 5);
 
     // Draw G-force dot
-    const dotX = tractionCenterX + (currentGForce.x * 50);
-    const dotY = tractionCenterY - (currentGForce.y * 50);
+    const dotX = tractionCenterX + (window.currentGForce.x * 50);
+    const dotY = tractionCenterY - (window.currentGForce.y * 50);
     tractionCtx.beginPath();
     tractionCtx.arc(dotX, dotY, 8, 0, 2 * Math.PI);
     tractionCtx.fillStyle = '#0af';
@@ -624,13 +627,13 @@ function recordDataPoint() {
             accuracy_ft: data_point['accuracy_ft'].toFixed(1),
             speed_mph: data_point['speed_mph'],
             gForce: Math.sqrt(
-                Math.pow(currentGForce.x, 2) +
-                Math.pow(currentGForce.y, 2) +
-                Math.pow(currentGForce.z, 2)
+                Math.pow(window.currentGForce.x, 2) +
+                Math.pow(window.currentGForce.y, 2) +
+                Math.pow(window.currentGForce.z, 2)
             ) || 0,
-            gX: currentGForce.x || 0,
-            gY: currentGForce.y || 0,
-            gZ: currentGForce.z || 0
+            gX: window.currentGForce.x || 0,
+            gY: window.currentGForce.y || 0,
+            gZ: window.currentGForce.z || 0
         };
 
         logData(_data_point);
