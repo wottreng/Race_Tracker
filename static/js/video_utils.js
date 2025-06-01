@@ -1,3 +1,7 @@
+const fps = 10; // Frames per second
+const frameDuration = 1000 / fps; // Duration of each frame in ms
+let lastFrameTime = 0;
+
 function exportLogAsVideo() {
     // Check if there's data to create video from
     if (!dataLog || dataLog.length === 0) {
@@ -61,7 +65,6 @@ function exportLogAsVideo() {
 
     const totalFrames = dataLog.length;
     let currentFrame = 0;
-    const fps = 10; // Frames per second
 
     // Check if MediaRecorder is supported
     if (!window.MediaRecorder) {
@@ -169,23 +172,33 @@ function exportLogAsVideo() {
 
         mediaRecorder.start();
 
-        const drawFrame = () => {
+        const drawFrame = (timestamp) => {
             if (currentFrame < totalFrames) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                const speed = dataLog[currentFrame].speed_mph;
-                const gForce = dataLog[currentFrame].gForce;
-                drawGauge(ctx, speed, gForce);
-                currentFrame++;
-                progressFill.style.width = `${(currentFrame / totalFrames) * 100}%`;
-                progressText.textContent = `Rendering video: ${Math.round((currentFrame / totalFrames) * 100)}%`;
+                // Calculate time elapsed since last frame
+                const elapsed = timestamp - lastFrameTime;
+
+                // Only draw a new frame when enough time has passed
+                if (!lastFrameTime || elapsed >= frameDuration) {
+                    // Update last frame time, accounting for any excess time
+                    lastFrameTime = timestamp - (elapsed % frameDuration);
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    const speed = dataLog[currentFrame].speed_mph;
+                    const gForce = dataLog[currentFrame].gForce;
+                    drawGauge(ctx, speed, gForce);
+
+                    currentFrame++;
+                    progressFill.style.width = `${(currentFrame / totalFrames) * 100}%`;
+                    progressText.textContent = `Rendering video: ${Math.round((currentFrame / totalFrames) * 100)}%`;
+                }
                 requestAnimationFrame(drawFrame);
             } else {
                 mediaRecorder.stop();
             }
         };
 
-        // Start drawing frames
-        drawFrame();
+        // Start drawing frames with timestamp parameter
+        requestAnimationFrame(drawFrame);
     } catch (error) {
         showToast(`Error creating video: ${error.message}`);
         document.body.removeChild(overlay);
