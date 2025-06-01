@@ -1,8 +1,8 @@
-const fps = 10; // Frames per second
-const frameDuration = 1000 / fps; // Duration of each frame in ms
-let lastFrameTime = 0;
-
 function exportLogAsVideo() {
+    const fps = 10; // Frames per second
+    const frameDuration = 1000 / fps; // Duration of each frame in ms
+    let lastFrameTime = 0;
+
     if (!dataLog || dataLog.length === 0) {
         showToast('No log data to export as video!');
         return;
