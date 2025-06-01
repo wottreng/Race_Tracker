@@ -1,7 +1,5 @@
 function exportLogAsVideo() {
     const fps = 10; // Frames per second
-    const frameDuration = 1000 / fps; // Duration of each frame in ms
-    let lastFrameTime = 0;
 
     if (!dataLog || dataLog.length === 0) {
         showToast('No log data to export as video!');
@@ -330,8 +328,6 @@ function exportLogAsVideo() {
 
         // Draw speed needle
         ctx.save();
-        ctx.shadowColor = 'rgba(255,102,0,0.6)';
-        ctx.shadowBlur = 15;
 
         const angle = startAngle + (Math.min(speed, maxSpeed) / maxSpeed) * sweepAngle;
         const needleLength = radius * 0.85;
@@ -381,8 +377,6 @@ function exportLogAsVideo() {
 
         // Draw G-force needle
         ctx.save();
-        ctx.shadowColor = 'rgba(0,150,255,0.6)';
-        ctx.shadowBlur = 15;
 
         const angle = (-0.5 + (gForce / maxG)) * Math.PI;
         const needleLength = radius * 0.85;
