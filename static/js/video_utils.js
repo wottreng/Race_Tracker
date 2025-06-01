@@ -126,15 +126,13 @@ function exportLogAsVideo() {
         });
     };
 
-    // Calculate max speed once
-    if (!window.maxSpeedForGauge) {
-        const maxSpeed = dataLog.reduce((max, point) => {
-            const s = parseFloat(point.speed_mph || 0);
-            return isNaN(s) ? max : Math.max(max, s);
-        }, 0);
-        window.maxSpeedForGauge = Math.ceil((maxSpeed * 1.1) / 20) * 20;
-        window.maxSpeedForGauge = Math.max(window.maxSpeedForGauge, 60);
-    }
+    // Calculate max speed from dataLog
+    const maxSpeedInDataLog = dataLog.reduce((max, point) => {
+        const s = parseFloat(point.speed_mph || 0);
+        return isNaN(s) ? max : Math.max(max, s);
+    }, 0);
+    window.maxSpeedForGauge = Math.ceil((maxSpeedInDataLog * 1.1) / 20) * 20; // Add 10% buffer and round to nearest 20
+    window.maxSpeedForGauge = Math.max(window.maxSpeedForGauge, 60); // Ensure a minimum of 60mph for the gauge
 
     // Pre-render static elements
     const renderStaticElements = () => {
