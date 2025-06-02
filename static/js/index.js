@@ -689,7 +689,6 @@ function initializeDataLog() {
         const savedLog = localStorage.getItem('raceTrackerLog');
         if (savedLog) {
             dataLog = JSON.parse(savedLog);
-            console.log(`Loaded ${dataLog.length} saved log entries`);
             updateDataLogDisplay();
         }
     } catch (e) {
