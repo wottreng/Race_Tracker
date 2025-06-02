@@ -509,10 +509,22 @@ function exportLog() {
 }
 
 // Toast notification
-function showToast(message) {
+function showToast(message, type = 'info') {
     const toastEl = document.getElementById('toast');
     const toastBody = toastEl.querySelector('.toast-body');
     toastBody.innerText = message;
+
+    // Set toast color based on type
+    toastEl.classList.remove('bg-danger', 'bg-info', 'bg-success', 'bg-warning');
+    if (type === 'error') {
+        toastEl.classList.add('bg-danger', 'text-black');
+    } else if (type === 'success') {
+        toastEl.classList.add('bg-success', 'text-white');
+    } else if (type === 'warning') {
+        toastEl.classList.add('bg-warning', 'text-black');
+    } else {
+        toastEl.classList.add('bg-info', 'text-black');
+    }
 
     // Remove any existing toast instance
     if (toastEl._toastInstance) {

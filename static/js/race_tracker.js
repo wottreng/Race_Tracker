@@ -132,7 +132,7 @@ class KalmanFilter {
         const controlGain = parseFloat(document.getElementById('controlGain').value);
 
         if (isNaN(processNoise) || isNaN(measurementNoise) || isNaN(controlGain)) {
-            show_error('Invalid filter tunables. Please enter valid numbers.');
+            showToast('Invalid filter tunables. Please enter valid numbers.', 'warning');
             return;
         }
 
@@ -155,8 +155,6 @@ class KalmanFilter {
         const processNoise = localStorage.getItem('processNoise');
         const measurementNoise = localStorage.getItem('measurementNoise');
         const controlGain = localStorage.getItem('controlGain');
-
-        console.log(processNoise, measurementNoise, controlGain);
 
         if (processNoise !== null) this.Q = parseFloat(processNoise); else this.Q = 0.2;
         if (measurementNoise !== null) this.R = parseFloat(measurementNoise); else this.R = 0.5;
