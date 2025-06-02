@@ -101,35 +101,7 @@ function calculateAverageSpeedOfLap(crossingTimestamps) {
 }
 
 class KalmanFilter {
-    constructor(options = {}) {
-        // Initial state estimate (speed in mph)
-        this.x = options.initialValue || 0;
-
-        // Initial estimate uncertainty
-        this.P = options.initialCovariance || 1;
-
-        // Process noise (how much we expect speed to naturally change between updates)
-        // Higher values = more responsive to changes but more noise
-        this.Q = options.processNoise || 0.01;
-
-        // Measurement noise (how noisy we expect GPS readings to be)
-        // Higher values = smoother output but more lag
-        this.R = options.measurementNoise || 0.5;
-
-        // Control input (acceleration estimate) - can be adjusted with accelerometer data
-        this.u = 0;
-
-        // State transition model (how we expect speed to change naturally)
-        this.F = 1;
-
-        // Control input model
-        this.B = options.controlGain || 0.1;
-
-        // Last update timestamp
-        this.lastTimestamp = null;
-    }
-
-    // Update the filter with a new measurement
+     // Update the filter with a new measurement
     update(measurement, timestamp = Date.now(), acceleration = 0) {
         // Handle time delta for process updates
         if (this.lastTimestamp) {
@@ -154,6 +126,53 @@ class KalmanFilter {
         return this.x;
     }
 
+    setFilterTunables() {
+        const processNoise = parseFloat(document.getElementById('processNoise').value);
+        const measurementNoise = parseFloat(document.getElementById('measurementNoise').value);
+        const controlGain = parseFloat(document.getElementById('controlGain').value);
+
+        if (isNaN(processNoise) || isNaN(measurementNoise) || isNaN(controlGain)) {
+            showToast('Invalid filter tunables. Please enter valid numbers.', 'warning');
+            return;
+        }
+
+        this.Q = processNoise;
+        this.R = measurementNoise;
+        this.B = controlGain;
+
+        this.saveFilterTunablesToLocalStorage()
+
+        showToast('Filter tunables updated successfully.');
+    }
+
+    saveFilterTunablesToLocalStorage() {
+        localStorage.setItem('processNoise', this.Q);
+        localStorage.setItem('measurementNoise', this.R);
+        localStorage.setItem('controlGain', this.B);
+    }
+
+    getFilterTunablesFromLocalStorage() {
+        const processNoise = localStorage.getItem('processNoise');
+        const measurementNoise = localStorage.getItem('measurementNoise');
+        const controlGain = localStorage.getItem('controlGain');
+
+        if (processNoise !== null) this.Q = parseFloat(processNoise); else this.Q = 0.2;
+        if (measurementNoise !== null) this.R = parseFloat(measurementNoise); else this.R = 0.5;
+        if (controlGain !== null) this.B = parseFloat(controlGain); else this.B = 0.1;
+
+        this.updateFilterModalValues();
+    }
+
+    updateFilterModalValues() {
+        try{
+            document.getElementById('processNoise').value = this.Q;
+            document.getElementById('measurementNoise').value = this.R;
+            document.getElementById('controlGain').value = this.B;
+        } catch (error) {
+            console.error('Error updating filter modal values:', error);
+        }
+    }
+
     // Get current state estimate without updating
     getCurrentEstimate() {
         return this.x;
@@ -164,15 +183,55 @@ class KalmanFilter {
         this.x = value;
         this.P = 1;
         this.lastTimestamp = null;
+        this.u = 0;
+        this.F = 1;
+        this.Q = 0.2; // Default process noise
+        this.R = 0.5; // Default measurement noise
+        this.B = 0.1; // Default control gain
+        this.saveFilterTunablesToLocalStorage();
+        this.updateFilterModalValues();
+        showToast('Filter tunables reset.');
+    }
+
+    constructor(options = {}) {
+        this.getFilterTunablesFromLocalStorage();
+        // Initial state estimate (speed in mph)
+        this.x = options.initialValue || 0;
+
+        // Initial estimate uncertainty
+        this.P = options.initialCovariance || 1;
+
+        // Process noise (how much we expect speed to naturally change between updates)
+        // Higher values = more responsive to changes but more noise
+        // this.Q = options.processNoise || 0.5;
+
+        // Measurement noise (how noisy we expect GPS readings to be)
+        // Higher values = smoother output but more lag
+        // this.R = options.measurementNoise || 0.5;
+
+        // Control input (acceleration estimate) - can be adjusted with accelerometer data
+        this.u = 0;
+
+        // State transition model (how we expect speed to change naturally)
+        this.F = 1;
+
+        // Control input model
+        // this.B = options.controlGain || 0.1;
+
+        // Last update timestamp
+        this.lastTimestamp = null;
+        console.log("KalmanFilter initialized with tunables:", this.Q, this.R, this.B);
     }
 }
 
 window.speedKalmanFilter = new KalmanFilter({
     initialValue: 0,
-    processNoise: 0.2,     // Tune this: higher = more responsive but noisier
-    measurementNoise: 0.5,  // Tune this: higher = smoother but more lag
-    controlGain: 0.1 // Tune this: how much acceleration affects speed, higher = more responsive
 });
+
+function showKalmanFilterModal(){
+    const kalmanFilterModal = new bootstrap.Modal(document.getElementById('KalmanFilterModal'));
+    kalmanFilterModal.show();
+}
 
 let dataLogChartInstance = null;
 

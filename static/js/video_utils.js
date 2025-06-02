@@ -1,21 +1,28 @@
 function exportLogAsVideo() {
-    // Check if there's data to create video from
+    const fps = 10; // Frames per second
+
     if (!dataLog || dataLog.length === 0) {
         showToast('No log data to export as video!');
         return;
     }
+    let isCancelled = false;
 
-    // Create a canvas for our video frames
-    const canvas = document.createElement('canvas');
-    canvas.width = 600;  // Set video resolution
-    canvas.height = 400;
-    const ctx = canvas.getContext('2d');
+    // Create layered canvases - one for static elements, one for dynamic elements
+    const staticCanvas = document.createElement('canvas');
+    const dynamicCanvas = document.createElement('canvas');
+    const outputCanvas = document.createElement('canvas');
 
-    // Create canvas offscreen without adding to DOM
-    canvas.style.display = 'none';
-    document.body.appendChild(canvas);
+    staticCanvas.width = dynamicCanvas.width = outputCanvas.width = 600;
+    staticCanvas.height = dynamicCanvas.height = outputCanvas.height = 400;
 
-    // Create progress indicator
+    const staticCtx = staticCanvas.getContext('2d');
+    const dynamicCtx = dynamicCanvas.getContext('2d');
+    const outputCtx = outputCanvas.getContext('2d');
+
+    // Keep output canvas hidden but in the DOM for MediaRecorder
+    outputCanvas.style.display = 'none';
+    document.body.appendChild(outputCanvas);
+
     const overlay = document.createElement('div');
     overlay.style.position = 'fixed';
     overlay.style.top = '0';
@@ -54,239 +61,133 @@ function exportLogAsVideo() {
     progressFill.style.left = '0';
     progressFill.style.transition = 'width 0.5s ease-in-out';
 
+    // Add cancel button
+    const cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Cancel';
+    cancelButton.style.marginTop = '20px';
+    cancelButton.style.padding = '8px 16px';
+    cancelButton.style.backgroundColor = '#ff4444';
+    cancelButton.style.color = 'white';
+    cancelButton.style.border = 'none';
+    cancelButton.style.borderRadius = '4px';
+    cancelButton.style.cursor = 'pointer';
+    cancelButton.style.fontWeight = 'bold';
+
+    // Add hover effect
+    cancelButton.onmouseover = () => {
+        cancelButton.style.backgroundColor = '#ff6666';
+    };
+
+    cancelButton.onmouseout = () => {
+        cancelButton.style.backgroundColor = '#ff4444';
+    };
+
+    // Attach cancel event handler
+    cancelButton.onclick = () => {
+        isCancelled = true;
+        progressText.textContent = 'Cancelling...';
+    };
+
     progressBar.appendChild(progressFill);
     overlay.appendChild(progressText);
     overlay.appendChild(progressBar);
+    overlay.appendChild(cancelButton);
     document.body.appendChild(overlay);
+
+    // Common cleanup function to use on completion or cancellation
+    const cleanup = () => {
+        document.body.removeChild(overlay);
+        document.body.removeChild(outputCanvas);
+    };
 
     const totalFrames = dataLog.length;
     let currentFrame = 0;
-    const fps = 10; // Frames per second
 
-    // Check if MediaRecorder is supported
+    // Check MediaRecorder support
     if (!window.MediaRecorder) {
         showToast('Your browser does not support the MediaRecorder API');
         document.body.removeChild(overlay);
-        document.body.removeChild(canvas);
+        document.body.removeChild(outputCanvas);
         return;
     }
 
-    // Set up recording
-    try {
-        const stream = canvas.captureStream(fps);
-        const mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'video/webm; codecs=vp8'
+    // Preload logo and wait for it
+    const preloadResources = () => {
+        return new Promise((resolve) => {
+            if (!window.logoImage) {
+                window.logoImage = new Image();
+                window.logoImage.src = '/static/images/race_tracker.png';
+                window.logoImage.onload = resolve;
+            } else if (window.logoImage.complete) {
+                resolve();
+            } else {
+                window.logoImage.onload = resolve;
+            }
         });
+    };
 
-        const chunks = [];
-        mediaRecorder.ondataavailable = function (e) {
-            chunks.push(e.data);
-        };
+    // Calculate max speed from dataLog
+    const maxSpeedInDataLog = dataLog.reduce((max, point) => {
+        const s = parseFloat(point.speed_mph || 0);
+        return isNaN(s) ? max : Math.max(max, s);
+    }, 0);
+    window.maxSpeedForGauge = Math.ceil((maxSpeedInDataLog * 1.1) / 20) * 20; // Add 10% buffer and round to nearest 20
+    window.maxSpeedForGauge = Math.max(window.maxSpeedForGauge, 60); // Ensure a minimum of 60mph for the gauge
 
-        mediaRecorder.onstop = function () {
-            const blob = new Blob(chunks, {type: 'video/webm'});
-            const url = URL.createObjectURL(blob);
-            const fileName = `track_video_${new Date().toISOString().substring(0, 19).replace(/:/g, '-')}.webm`;
-
-            // Remove progress overlay
-            document.body.removeChild(overlay);
-            document.body.removeChild(canvas);
-
-            // Check if we're on a mobile device
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-            if (isMobile) {
-                // Create mobile-friendly download interface
-                const downloadOverlay = document.createElement('div');
-                downloadOverlay.style.position = 'fixed';
-                downloadOverlay.style.top = '0';
-                downloadOverlay.style.left = '0';
-                downloadOverlay.style.width = '100%';
-                downloadOverlay.style.height = '100%';
-                downloadOverlay.style.backgroundColor = 'rgba(0,0,0,0.85)';
-                downloadOverlay.style.display = 'flex';
-                downloadOverlay.style.flexDirection = 'column';
-                downloadOverlay.style.justifyContent = 'center';
-                downloadOverlay.style.alignItems = 'center';
-                downloadOverlay.style.zIndex = '9999';
-
-                const downloadBox = document.createElement('div');
-                downloadBox.style.backgroundColor = '#222';
-                downloadBox.style.borderRadius = '12px';
-                downloadBox.style.padding = '20px';
-                downloadBox.style.maxWidth = '90%';
-                downloadBox.style.width = '360px';
-                downloadBox.style.textAlign = 'center';
-                downloadBox.style.boxShadow = '0 4px 24px rgba(0,0,0,0.5)';
-
-                const title = document.createElement('h3');
-                title.textContent = 'Video Ready';
-                title.style.color = 'white';
-                title.style.marginBottom = '15px';
-
-                const downloadBtn = document.createElement('a');
-                downloadBtn.href = url;
-                downloadBtn.download = fileName;
-                downloadBtn.textContent = 'Tap to Download';
-                downloadBtn.style.display = 'block';
-                downloadBtn.style.backgroundColor = '#0d6efd';
-                downloadBtn.style.color = 'white';
-                downloadBtn.style.padding = '14px 20px';
-                downloadBtn.style.borderRadius = '6px';
-                downloadBtn.style.textDecoration = 'none';
-                downloadBtn.style.fontWeight = 'bold';
-                downloadBtn.style.margin = '10px 0';
-
-                const closeBtn = document.createElement('button');
-                closeBtn.textContent = 'Close';
-                closeBtn.style.backgroundColor = 'transparent';
-                closeBtn.style.border = '1px solid #666';
-                closeBtn.style.color = '#fff';
-                closeBtn.style.padding = '8px 16px';
-                closeBtn.style.borderRadius = '6px';
-                closeBtn.style.marginTop = '15px';
-                closeBtn.onclick = function () {
-                    document.body.removeChild(downloadOverlay);
-                    URL.revokeObjectURL(url);
-                };
-
-                downloadBox.appendChild(title);
-                downloadBox.appendChild(downloadBtn);
-                downloadBox.appendChild(closeBtn);
-                downloadOverlay.appendChild(downloadBox);
-                document.body.appendChild(downloadOverlay);
-            } else {
-                // Desktop behavior - automatic download plus notification
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                a.click();
-
-                showToast('Video exported successfully');
-                URL.revokeObjectURL(url);
-            }
-        };
-
-        mediaRecorder.start();
-
-        const drawFrame = () => {
-            if (currentFrame < totalFrames) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                const speed = dataLog[currentFrame].speed_mph;
-                const gForce = dataLog[currentFrame].gForce;
-                drawGauge(ctx, speed, gForce);
-                currentFrame++;
-                progressFill.style.width = `${(currentFrame / totalFrames) * 100}%`;
-                progressText.textContent = `Rendering video: ${Math.round((currentFrame / totalFrames) * 100)}%`;
-                requestAnimationFrame(drawFrame);
-            } else {
-                mediaRecorder.stop();
-            }
-        };
-
-        // Start drawing frames
-        drawFrame();
-    } catch (error) {
-        showToast(`Error creating video: ${error.message}`);
-        document.body.removeChild(overlay);
-        document.body.removeChild(canvas);
-    }
-
-    function drawGauge(ctx, speed, gForce) {
-        // Create modern dark gradient background
-        const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    // Pre-render static elements
+    const renderStaticElements = () => {
+        // Background
+        const bgGradient = staticCtx.createLinearGradient(0, 0, 0, staticCanvas.height);
         bgGradient.addColorStop(0, '#1a1a1a');
         bgGradient.addColorStop(1, '#101010');
-        ctx.fillStyle = bgGradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        staticCtx.fillStyle = bgGradient;
+        staticCtx.fillRect(0, 0, staticCanvas.width, staticCanvas.height);
 
-        // Add subtle grid pattern
-        ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < canvas.width; i += 20) {
-            ctx.beginPath();
-            ctx.moveTo(i, 0);
-            ctx.lineTo(i, canvas.height);
-            ctx.stroke();
+        // Grid pattern
+        staticCtx.strokeStyle = 'rgba(255,255,255,0.03)';
+        staticCtx.lineWidth = 1;
+        for (let i = 0; i < staticCanvas.width; i += 20) {
+            staticCtx.beginPath();
+            staticCtx.moveTo(i, 0);
+            staticCtx.lineTo(i, staticCanvas.height);
+            staticCtx.stroke();
         }
-        for (let i = 0; i < canvas.height; i += 20) {
-            ctx.beginPath();
-            ctx.moveTo(0, i);
-            ctx.lineTo(canvas.width, i);
-            ctx.stroke();
-        }
-
-        // Load and draw logo
-        drawLogo(ctx, canvas.width/2, 60, 200);
-
-        // Draw gauges with modern style
-        drawSpeedometer(ctx, speed, 175, 220, 140);
-        drawGForceMeter(ctx, gForce, 425, 220, 140);
-
-        // Format timestamp from data log
-        const timestamp = dataLog[currentFrame].timestamp;
-        const formattedTime = new Date(timestamp).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            fractionalSecondDigits: 3
-        });
-
-        // Add frame info with modern styling
-        ctx.fillStyle = 'rgba(255,255,255,0.7)';
-        ctx.font = '12px Arial, sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(`Frame: ${currentFrame}/${totalFrames}`, canvas.width - 20, canvas.height - 16);
-        ctx.textAlign = 'left';
-        ctx.fillText(`Time: ${formattedTime}`, 20, canvas.height - 16);
-    }
-
-
-// Function to load and draw the logo
-    function drawLogo(ctx, x, y, width) {
-        // Create and use logo image if not already loaded
-        if (!window.logoImage) {
-            window.logoImage = new Image();
-            window.logoImage.src = '/static/images/race_tracker.png';
-            window.logoImage.onload = () => {
-                // Once loaded, it will be used in the next frame
-            };
+        for (let i = 0; i < staticCanvas.height; i += 20) {
+            staticCtx.beginPath();
+            staticCtx.moveTo(0, i);
+            staticCtx.lineTo(staticCanvas.width, i);
+            staticCtx.stroke();
         }
 
-        // Draw logo if loaded
+        // Draw logo
         if (window.logoImage && window.logoImage.complete) {
+            const x = staticCanvas.width/2;
+            const y = 60;
+            const width = 200;
             const aspectRatio = window.logoImage.height / window.logoImage.width;
             const height = width * aspectRatio;
-            ctx.drawImage(window.logoImage, x - width / 2, y - height / 2, width, height);
-        }
-    }
-
-    function drawSpeedometer(ctx, speed, x, y, radius) {
-        // Fix NaN speed value to prevent visual issues
-        speed = isNaN(parseFloat(speed)) ? 0 : parseFloat(speed);
-
-        // Calculate max speed from dataLog if not already calculated
-        if (!window.maxSpeedForGauge) {
-            // Find maximum speed in dataLog with 10% padding
-            const maxSpeed = dataLog.reduce((max, point) => {
-                const s = parseFloat(point.speed_mph || 0);
-                return isNaN(s) ? max : Math.max(max, s);
-            }, 0);
-
-            // Add padding and round to nearest multiple of 20
-            window.maxSpeedForGauge = Math.ceil((maxSpeed * 1.1) / 20) * 20;
-            // Ensure minimum reasonable scale (at least 60 mph)
-            window.maxSpeedForGauge = Math.max(window.maxSpeedForGauge, 60);
+            staticCtx.drawImage(window.logoImage, x - width / 2, y - height / 2, width, height);
         }
 
+        // Pre-render gauge backgrounds
+        drawGaugeBackgrounds(staticCtx);
+    };
+
+    // Only render the backgrounds for speedometer and g-force meter
+    const drawGaugeBackgrounds = (ctx) => {
         const maxSpeed = window.maxSpeedForGauge;
+        const maxG = 3;
 
-        // Define sweep angle (now 240 degrees instead of 180)
-        const startAngle = Math.PI + Math.PI/6; // 210 degrees
-        const endAngle = 3 * Math.PI - Math.PI/6; // 330 degrees
-        const sweepAngle = endAngle - startAngle; // 240 degrees
+        // Render speedometer background (175, 220)
+        renderGaugeBackground(ctx, 175, 220, 140, maxSpeed, true);
 
-        // Draw outer ring with gradient
+        // Render G-force meter background (425, 220)
+        renderGaugeBackground(ctx, 425, 220, 140, maxG, false);
+    };
+
+    // Generic gauge background renderer
+    const renderGaugeBackground = (ctx, x, y, radius, maxValue, isSpeedometer) => {
+        // Draw outer ring
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, 2 * Math.PI);
         const outerGradient = ctx.createRadialGradient(x, y, radius * 0.7, x, y, radius * 1.1);
@@ -295,7 +196,7 @@ function exportLogAsVideo() {
         ctx.fillStyle = outerGradient;
         ctx.fill();
 
-        // Draw inner background with gradient
+        // Draw inner background
         ctx.beginPath();
         ctx.arc(x, y, radius * 0.95, 0, 2 * Math.PI);
         const innerGradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
@@ -304,52 +205,131 @@ function exportLogAsVideo() {
         ctx.fillStyle = innerGradient;
         ctx.fill();
 
-        // Draw tick marks with expanded sweep
-        const tickStep = maxSpeed <= 100 ? 10 : 20; // Adjust tick spacing based on max speed
-        for (let i = 0; i <= maxSpeed; i += tickStep) {
-            const angle = startAngle + (i / maxSpeed) * sweepAngle;
-            const innerRadius = radius * 0.8;
-            const outerRadius = i % (tickStep*2) === 0 ? radius * 0.95 : radius * 0.9;
+        if (isSpeedometer) {
+            // Draw speedometer tick marks
+            const startAngle = Math.PI + Math.PI/6; // 210 degrees
+            const endAngle = 3 * Math.PI - Math.PI/6; // 330 degrees
+            const sweepAngle = endAngle - startAngle; // 240 degrees
 
-            ctx.beginPath();
-            ctx.moveTo(
-                x + innerRadius * Math.cos(angle),
-                y + innerRadius * Math.sin(angle)
-            );
-            ctx.lineTo(
-                x + outerRadius * Math.cos(angle),
-                y + outerRadius * Math.sin(angle)
-            );
-            ctx.strokeStyle = i % (tickStep*2) === 0 ? '#ff6600' : 'rgba(255,255,255,0.4)';
-            ctx.lineWidth = i % (tickStep*2) === 0 ? 3 : 1;
-            ctx.stroke();
+            const tickStep = maxValue <= 100 ? 10 : 20;
 
-            // Add speed labels for major ticks
-            if (i % (tickStep*2) === 0) {
-                const textRadius = radius * 0.7;
-                ctx.fillStyle = '#ccc';
-                ctx.font = 'bold 14px Arial, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(
-                    i.toString(),
-                    x + textRadius * Math.cos(angle),
-                    y + textRadius * Math.sin(angle)
+            for (let i = 0; i <= maxValue; i += tickStep) {
+                const angle = startAngle + (i / maxValue) * sweepAngle;
+                const innerRadius = radius * 0.8;
+                const outerRadius = i % (tickStep*2) === 0 ? radius * 0.95 : radius * 0.9;
+
+                ctx.beginPath();
+                ctx.moveTo(
+                    x + innerRadius * Math.cos(angle),
+                    y + innerRadius * Math.sin(angle)
                 );
+                ctx.lineTo(
+                    x + outerRadius * Math.cos(angle),
+                    y + outerRadius * Math.sin(angle)
+                );
+                ctx.strokeStyle = i % (tickStep*2) === 0 ? '#ff6600' : 'rgba(255,255,255,0.4)';
+                ctx.lineWidth = i % (tickStep*2) === 0 ? 3 : 1;
+                ctx.stroke();
+
+                if (i % (tickStep*2) === 0) {
+                    const textRadius = radius * 0.7;
+                    ctx.fillStyle = '#ccc';
+                    ctx.font = 'bold 14px Arial, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(
+                        i.toString(),
+                        x + textRadius * Math.cos(angle),
+                        y + textRadius * Math.sin(angle)
+                    );
+                }
+            }
+        } else {
+            // Draw G-force tick marks
+            for (let g = 0; g <= maxValue; g += 0.5) {
+                const angle = (-0.5 + g / maxValue) * Math.PI;
+                const innerRadius = radius * 0.8;
+                const outerRadius = g % 1 === 0 ? radius * 0.95 : radius * 0.9;
+
+                ctx.beginPath();
+                ctx.moveTo(
+                    x + innerRadius * Math.cos(angle),
+                    y + innerRadius * Math.sin(angle)
+                );
+                ctx.lineTo(
+                    x + outerRadius * Math.cos(angle),
+                    y + outerRadius * Math.sin(angle)
+                );
+
+                const tickColor = g <= 1 ? '#30a0ff' :
+                    g <= 2 ? '#30ff30' : '#ff3030';
+
+                ctx.strokeStyle = g % 1 === 0 ? tickColor : 'rgba(255,255,255,0.4)';
+                ctx.lineWidth = g % 1 === 0 ? 3 : 1;
+                ctx.stroke();
+
+                if (g % 1 === 0) {
+                    const textRadius = radius * 0.7;
+                    ctx.fillStyle = '#ccc';
+                    ctx.font = 'bold 14px Arial, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(
+                        g.toString(),
+                        x + textRadius * Math.cos(angle),
+                        y + textRadius * Math.sin(angle)
+                    );
+                }
             }
         }
+    };
 
-        // Draw speed needle with shadow using new angle calculation
+    // Render dynamic elements for current frame
+    const renderDynamicElements = (frame) => {
+        dynamicCtx.clearRect(0, 0, dynamicCanvas.width, dynamicCanvas.height);
+
+        const speed = dataLog[frame].speed_mph;
+        const gForce = dataLog[frame].gForce;
+
+        // Render speedometer needle
+        renderSpeedometerNeedle(dynamicCtx, speed, 175, 220, 140);
+
+        // Render G-force needle
+        renderGForceNeedle(dynamicCtx, gForce, 425, 220, 140);
+
+        // Format timestamp from data log
+        const timestamp = dataLog[frame].timestamp;
+        const formattedTime = new Date(timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            fractionalSecondDigits: 3
+        });
+
+        // Add frame info
+        dynamicCtx.fillStyle = 'rgba(255,255,255,0.7)';
+        dynamicCtx.font = '12px Arial, sans-serif';
+        dynamicCtx.textAlign = 'right';
+        dynamicCtx.fillText(`Frame: ${frame}/${totalFrames}`, dynamicCanvas.width - 20, dynamicCanvas.height - 16);
+        dynamicCtx.textAlign = 'left';
+        dynamicCtx.fillText(`Time: ${formattedTime}`, 20, dynamicCanvas.height - 16);
+    };
+
+    // Only render the speedometer needle
+    const renderSpeedometerNeedle = (ctx, speed, x, y, radius) => {
+        const maxSpeed = window.maxSpeedForGauge;
+        speed = isNaN(parseFloat(speed)) ? 0 : parseFloat(speed);
+
+        const startAngle = Math.PI + Math.PI/6; // 210 degrees
+        const endAngle = 3 * Math.PI - Math.PI/6; // 330 degrees
+        const sweepAngle = endAngle - startAngle; // 240 degrees
+
+        // Draw speed needle
         ctx.save();
-        ctx.shadowColor = 'rgba(255,102,0,0.6)';
-        ctx.shadowBlur = 15;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
 
         const angle = startAngle + (Math.min(speed, maxSpeed) / maxSpeed) * sweepAngle;
         const needleLength = radius * 0.85;
 
-        // Create needle gradient
         const needleGradient = ctx.createLinearGradient(
             x, y,
             x + needleLength * Math.cos(angle),
@@ -358,7 +338,6 @@ function exportLogAsVideo() {
         needleGradient.addColorStop(0, '#ff6600');
         needleGradient.addColorStop(1, '#ff3300');
 
-        // Draw needle
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineTo(
@@ -380,128 +359,26 @@ function exportLogAsVideo() {
         ctx.arc(x, y, radius * 0.1, 0, 2 * Math.PI);
         ctx.fill();
 
-        // Draw ring around center cap
-        ctx.beginPath();
-        ctx.arc(x, y, radius * 0.1, 0, 2 * Math.PI);
-        ctx.strokeStyle = '#ff9955';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Speed text with shadow
-        ctx.save();
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowBlur = 4;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 2;
+        // Speed text
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 28px Arial, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(`${Math.round(speed)}`, x, y + radius * 0.35);
         ctx.font = 'bold 18px Arial, sans-serif';
         ctx.fillText('MPH', x, y + radius * 0.5);
+    };
 
-        // Add max speed indicator
-        ctx.font = 'bold 12px Arial, sans-serif';
-        ctx.fillStyle = '#ff6600';
-        ctx.textAlign = 'center';
-        ctx.fillText(`MAX: ${maxSpeed}`, x, y + radius * 0.65);
-        ctx.restore();
-    }
-
-    function drawGForceMeter(ctx, gForce, x, y, radius) {
-        // Fix NaN gForce value
-        gForce = isNaN(parseFloat(gForce)) ? 0 : parseFloat(gForce);
+    // Only render the G-force needle
+    const renderGForceNeedle = (ctx, gForce, x, y, radius) => {
         const maxG = 3;
+        gForce = isNaN(parseFloat(gForce)) ? 0 : parseFloat(gForce);
 
-        // Draw outer ring with gradient
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, 2 * Math.PI);
-        const outerGradient = ctx.createRadialGradient(x, y, radius * 0.7, x, y, radius * 1.1);
-        outerGradient.addColorStop(0, '#333');
-        outerGradient.addColorStop(1, '#111');
-        ctx.fillStyle = outerGradient;
-        ctx.fill();
-
-        // Draw inner background with gradient
-        ctx.beginPath();
-        ctx.arc(x, y, radius * 0.95, 0, 2 * Math.PI);
-        const innerGradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-        innerGradient.addColorStop(0, '#2a2a2a');
-        innerGradient.addColorStop(1, '#1a1a1a');
-        ctx.fillStyle = innerGradient;
-        ctx.fill();
-
-        // Draw G-force indicator sectors
-        for (let g = 0; g <= maxG; g += 0.5) {
-            const angle = (-0.5 + g / maxG) * Math.PI;
-
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.arc(x, y, radius * 0.85, -0.5 * Math.PI, angle);
-            ctx.lineTo(x, y);
-
-            // Gradient based on g-force value
-            const sectorGradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-            const intensity = g / maxG;
-            const color = g <= 1 ?
-                `rgba(0,${Math.round(200 * intensity)},${Math.round(255 * (1 - intensity))},0.15)` :
-                `rgba(${Math.round(255 * intensity)},${Math.round(200 * (1 - intensity / 2))},0,0.15)`;
-
-            sectorGradient.addColorStop(0, 'transparent');
-            sectorGradient.addColorStop(1, color);
-            ctx.fillStyle = sectorGradient;
-            ctx.fill();
-        }
-
-        // Draw tick marks
-        for (let g = 0; g <= maxG; g += 0.5) {
-            const angle = (-0.5 + g / maxG) * Math.PI;
-            const innerRadius = radius * 0.8;
-            const outerRadius = g % 1 === 0 ? radius * 0.95 : radius * 0.9;
-
-            ctx.beginPath();
-            ctx.moveTo(
-                x + innerRadius * Math.cos(angle),
-                y + innerRadius * Math.sin(angle)
-            );
-            ctx.lineTo(
-                x + outerRadius * Math.cos(angle),
-                y + outerRadius * Math.sin(angle)
-            );
-
-            const tickColor = g <= 1 ? '#30a0ff' :
-                g <= 2 ? '#30ff30' : '#ff3030';
-
-            ctx.strokeStyle = g % 1 === 0 ? tickColor : 'rgba(255,255,255,0.4)';
-            ctx.lineWidth = g % 1 === 0 ? 3 : 1;
-            ctx.stroke();
-
-            // Add G-force labels for whole numbers
-            if (g % 1 === 0) {
-                const textRadius = radius * 0.7;
-                ctx.fillStyle = '#ccc';
-                ctx.font = 'bold 14px Arial, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(
-                    g.toString(),
-                    x + textRadius * Math.cos(angle),
-                    y + textRadius * Math.sin(angle)
-                );
-            }
-        }
-
-        // Draw G-force needle with glow effect
+        // Draw G-force needle
         ctx.save();
-        ctx.shadowColor = 'rgba(0,150,255,0.6)';
-        ctx.shadowBlur = 15;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
 
         const angle = (-0.5 + (gForce / maxG)) * Math.PI;
         const needleLength = radius * 0.85;
 
-        // Create needle gradient
         const needleGradient = ctx.createLinearGradient(
             x, y,
             x + needleLength * Math.cos(angle),
@@ -510,7 +387,6 @@ function exportLogAsVideo() {
         needleGradient.addColorStop(0, '#30a0ff');
         needleGradient.addColorStop(1, '#0050ff');
 
-        // Draw needle
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineTo(
@@ -532,25 +408,177 @@ function exportLogAsVideo() {
         ctx.arc(x, y, radius * 0.1, 0, 2 * Math.PI);
         ctx.fill();
 
-        // Draw ring around center cap
-        ctx.beginPath();
-        ctx.arc(x, y, radius * 0.1, 0, 2 * Math.PI);
-        ctx.strokeStyle = '#80d0ff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // G-force text with shadow
-        ctx.save();
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowBlur = 4;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 2;
+        // G-force text
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 28px Arial, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(gForce.toFixed(2), x, y + radius * 0.35);
         ctx.font = 'bold 18px Arial, sans-serif';
         ctx.fillText('G-FORCE', x, y + radius * 0.5);
-        ctx.restore();
-    }
+    };
+
+    // Composite all layers
+    const compositeFrame = () => {
+        outputCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+        outputCtx.drawImage(staticCanvas, 0, 0);
+        outputCtx.drawImage(dynamicCanvas, 0, 0);
+    };
+
+    // Start video encoding process
+    const startVideoEncoding = async () => {
+        await preloadResources();
+        renderStaticElements();
+
+        const frameDuration = 1000 / fps;
+        let lastFrameTime = 0;
+
+        try {
+            const stream = outputCanvas.captureStream(fps);
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'video/webm; codecs=vp8'
+            });
+
+            const chunks = [];
+            mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+
+            mediaRecorder.onstop = function () {
+                if (isCancelled) {
+                    cleanup();
+                    showToast('Video rendering cancelled');
+                    return;
+                }
+
+                const blob = new Blob(chunks, {type: 'video/webm'});
+                const url = URL.createObjectURL(blob);
+                const fileName = `track_video_${new Date().toISOString().substring(0, 19).replace(/:/g, '-')}.webm`;
+
+                cleanup();
+
+                // document.body.removeChild(overlay);
+                // document.body.removeChild(outputCanvas);
+
+                // Handle download (mobile/desktop detection code stays the same)
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+                if (isMobile) {
+                    // Create mobile-friendly download interface
+                    const downloadOverlay = document.createElement('div');
+                    downloadOverlay.style.position = 'fixed';
+                    downloadOverlay.style.top = '0';
+                    downloadOverlay.style.left = '0';
+                    downloadOverlay.style.width = '100%';
+                    downloadOverlay.style.height = '100%';
+                    downloadOverlay.style.backgroundColor = 'rgba(0,0,0,0.85)';
+                    downloadOverlay.style.display = 'flex';
+                    downloadOverlay.style.flexDirection = 'column';
+                    downloadOverlay.style.justifyContent = 'center';
+                    downloadOverlay.style.alignItems = 'center';
+                    downloadOverlay.style.zIndex = '9999';
+
+                    const downloadBox = document.createElement('div');
+                    downloadBox.style.backgroundColor = '#222';
+                    downloadBox.style.borderRadius = '12px';
+                    downloadBox.style.padding = '20px';
+                    downloadBox.style.maxWidth = '90%';
+                    downloadBox.style.width = '360px';
+                    downloadBox.style.textAlign = 'center';
+                    downloadBox.style.boxShadow = '0 4px 24px rgba(0,0,0,0.5)';
+
+                    const title = document.createElement('h3');
+                    title.textContent = 'Video Ready';
+                    title.style.color = 'white';
+                    title.style.marginBottom = '15px';
+
+                    const downloadBtn = document.createElement('a');
+                    downloadBtn.href = url;
+                    downloadBtn.download = fileName;
+                    downloadBtn.textContent = 'Tap to Download';
+                    downloadBtn.style.display = 'block';
+                    downloadBtn.style.backgroundColor = '#0d6efd';
+                    downloadBtn.style.color = 'white';
+                    downloadBtn.style.padding = '14px 20px';
+                    downloadBtn.style.borderRadius = '6px';
+                    downloadBtn.style.textDecoration = 'none';
+                    downloadBtn.style.fontWeight = 'bold';
+                    downloadBtn.style.margin = '10px 0';
+
+                    const closeBtn = document.createElement('button');
+                    closeBtn.textContent = 'Close';
+                    closeBtn.style.backgroundColor = 'transparent';
+                    closeBtn.style.border = '1px solid #666';
+                    closeBtn.style.color = '#fff';
+                    closeBtn.style.padding = '8px 16px';
+                    closeBtn.style.borderRadius = '6px';
+                    closeBtn.style.marginTop = '15px';
+                    closeBtn.onclick = function () {
+                        document.body.removeChild(downloadOverlay);
+                        URL.revokeObjectURL(url);
+                    };
+
+                    downloadBox.appendChild(title);
+                    downloadBox.appendChild(downloadBtn);
+                    downloadBox.appendChild(closeBtn);
+                    downloadOverlay.appendChild(downloadBox);
+                    document.body.appendChild(downloadOverlay);
+                } else {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.click();
+                    showToast('Video exported successfully');
+                    URL.revokeObjectURL(url);
+                }
+            };
+
+            mediaRecorder.start();
+
+            // Rendering function with throttling
+            const drawFrame = (timestamp) => {
+                if (isCancelled) {
+                    mediaRecorder.stop();
+                    return;
+                }
+
+                if (currentFrame >= totalFrames) {
+                    mediaRecorder.stop();
+                    return;
+                }
+
+                // Calculate time elapsed since last frame
+                const elapsed = timestamp - lastFrameTime;
+
+                // Only draw a new frame when enough time has passed
+                if (!lastFrameTime || elapsed >= frameDuration) {
+                    // Update progress every 5 frames to reduce DOM updates
+                    if (currentFrame % 5 === 0) {
+                        progressFill.style.width = `${(currentFrame / totalFrames) * 100}%`;
+                        progressText.textContent = `Rendering video: ${Math.round((currentFrame / totalFrames) * 100)}%`;
+                    }
+
+                    // Update last frame time, accounting for excess time
+                    lastFrameTime = timestamp - (elapsed % frameDuration);
+
+                    // Render dynamic elements for current frame
+                    renderDynamicElements(currentFrame);
+
+                    // Composite layers
+                    compositeFrame();
+
+                    // Move to next frame
+                    currentFrame++;
+                }
+
+                // Continue rendering loop
+                requestAnimationFrame(drawFrame);
+            };
+
+            requestAnimationFrame(drawFrame);
+        } catch (error) {
+            showToast(`Error creating video: ${error.message}`);
+            cleanup();
+        }
+    };
+
+    // Begin the process
+    startVideoEncoding();
 }
