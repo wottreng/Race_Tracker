@@ -59,32 +59,46 @@
             </div>
             <div class="card-body">
                 <div class="d-flex flex-column gap-2">
-                    <button class="btn d-flex align-items-center option_btn"
-                            onclick="reset_GPS()">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i>
-                        <span>Reset GPS</span>
-                    </button>
-                    <button class="btn d-flex align-items-center option_btn"
-                            onclick="resetMaxSpeed()">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i>
-                        <span>Reset Maximum Speed</span>
-                    </button>
-                    <button class="btn d-flex align-items-center option_btn" onclick="resetMaxG()">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i>
-                        <span>Reset Maximum G-Force</span>
-                    </button>
-                    <button class="btn d-flex align-items-center option_btn" onclick="uploadCSVdata()">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i>
-                        <span>Import Data CSV</span>
-                    </button>
-                    <button class="btn d-flex align-items-center option_btn" onclick="openTrackLapModal()">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i>
-                        <span>Calculate Lap Times</span>
-                    </button>
-                    <button class="btn d-flex align-items-center option_btn" onclick="showKalmanFilterModal()">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i>
-                        <span>Change GPS Speed Filter Settings</span>
-                    </button>
+                    <div class="d-flex flex-column gap-2">
+                        <button class="btn d-flex align-items-center option_btn"
+                                onclick="reset_GPS()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                            <span>Reset GPS</span>
+                        </button>
+                        <button class="btn d-flex align-items-center option_btn"
+                                onclick="resetMaxSpeed()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                            <span>Reset Maximum Speed</span>
+                        </button>
+                        <button class="btn d-flex align-items-center option_btn" onclick="resetMaxG()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                            <span>Reset Maximum G-Force</span>
+                        </button>
+                    </div>
+                    <div class="d-flex flex-column gap-2 pt-2 pb-2">
+                        <button class="btn d-flex align-items-center option_btn" onclick="uploadCSVdata()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                            <span>Import Data Log CSV</span>
+                        </button>
+                        <button class="btn d-flex align-items-center option_btn" onclick="exportLog()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                            <span>Export Data Log as CSV</span>
+                        </button>
+                        <button class="btn d-flex align-items-center option_btn" onclick="exportLogAsVideo()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                            <span>Create Video From Log</span>
+                        </button>
+                        <button class="btn d-flex align-items-center option_btn" onclick="openTrackLapModal()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                            <span>Calculate Lap Times</span>
+                        </button>
+                    </div>
+                    <div class="d-flex flex-column gap-2 pt-2 pb-2">
+                        <button class="btn d-flex align-items-center option_btn" onclick="showKalmanFilterModal()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                            <span>Change GPS Speed Filter Settings</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -98,18 +112,14 @@
     </div>
     <div class="panel-body">
         <div class="d-flex flex-wrap justify-content-between">
-            <div class="d-flex flex-column gap-2">
-                <button class="btn btn-outline-danger me-1 mb-2" onclick="clearLog()">Clear Log</button>
+            <button class="btn btn-outline-danger me-1 mb-2" onclick="clearLog()">Clear Log</button>
+            <div class="d-flex flex-column gap-2 align-items-end">
                 <button class="btn btn-success me-1 mb-2" id="startLogBtn" onclick="manualStartLogging()">Start
                     Logging
                 </button>
                 <button class="btn btn-warning me-1 mb-2" id="stopLogBtn" onclick="manualStopLogging()"
                         style="display:none">Stop Logging
                 </button>
-            </div>
-            <div class="d-flex flex-column gap-2">
-                <button class="btn btn-primary mb-2" onclick="exportLog()">Export Log (CSV)</button>
-                <button class="btn btn-primary mb-2" onclick="exportLogAsVideo()">Export Log as Video</button>
             </div>
         </div>
         <div class="form-check form-switch mt-2">
