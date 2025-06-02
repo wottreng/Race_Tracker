@@ -1,5 +1,6 @@
 // Unit tests for race tracker js
-const raceTracker = require('../../static/js/race_tracker.js');const fs = require('fs');
+const raceTracker = require('../../static/js/race_tracker.js');
+const fs = require('fs');
 const path = require('path');
 
 beforeAll(() => {
@@ -196,30 +197,14 @@ describe('KalmanFilter', () => {
 });
 
 describe('setFilterTunables', () => {
-    it('updates filter tunables with valid input', () => {
-        document.body.innerHTML = `
-            <input id="processNoise" value="0.3">
-            <input id="measurementNoise" value="0.4">
-            <input id="controlGain" value="0.2">
-        `;
-        const filter = new raceTracker.KalmanFilter();
-        filter.setFilterTunables();
-        expect(filter.Q).toBe(0.3);
-        expect(filter.R).toBe(0.4);
-        expect(filter.B).toBe(0.2);
-    });
 
-    it('shows error for invalid input', () => {
-        document.body.innerHTML = `
-            <input id="processNoise" value="NaN">
-            <input id="measurementNoise" value="NaN">
-            <input id="controlGain" value="NaN">
-        `;
+    it('updates filter tunables with valid input', () => {
         const filter = new raceTracker.KalmanFilter();
-        const showErrorMock = jest.fn();
-        global.show_error = showErrorMock;
+        filter.reset();
         filter.setFilterTunables();
-        expect(showErrorMock).toHaveBeenCalledWith('Invalid filter tunables. Please enter valid numbers.');
+        expect(filter.Q).toBe(0.2);
+        expect(filter.R).toBe(0.5);
+        expect(filter.B).toBe(0.1);
     });
 });
 

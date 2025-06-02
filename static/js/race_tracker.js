@@ -140,16 +140,15 @@ class KalmanFilter {
         this.R = measurementNoise;
         this.B = controlGain;
 
+        this.saveFilterTunablesToLocalStorage()
+
         showToast('Filter tunables updated successfully.');
     }
 
     saveFilterTunablesToLocalStorage() {
-
         localStorage.setItem('processNoise', this.Q);
         localStorage.setItem('measurementNoise', this.R);
         localStorage.setItem('controlGain', this.B);
-
-        console.log('Filter tunables saved to local storage successfully.');
     }
 
     getFilterTunablesFromLocalStorage() {
@@ -157,11 +156,23 @@ class KalmanFilter {
         const measurementNoise = localStorage.getItem('measurementNoise');
         const controlGain = localStorage.getItem('controlGain');
 
+        console.log(processNoise, measurementNoise, controlGain);
+
         if (processNoise !== null) this.Q = parseFloat(processNoise); else this.Q = 0.2;
         if (measurementNoise !== null) this.R = parseFloat(measurementNoise); else this.R = 0.5;
         if (controlGain !== null) this.B = parseFloat(controlGain); else this.B = 0.1;
 
-        console.log('Filter tunables loaded from local storage successfully.');
+        this.updateFilterModalValues();
+    }
+
+    updateFilterModalValues() {
+        try{
+            document.getElementById('processNoise').value = this.Q;
+            document.getElementById('measurementNoise').value = this.R;
+            document.getElementById('controlGain').value = this.B;
+        } catch (error) {
+            console.error('Error updating filter modal values:', error);
+        }
     }
 
     // Get current state estimate without updating
@@ -174,6 +185,14 @@ class KalmanFilter {
         this.x = value;
         this.P = 1;
         this.lastTimestamp = null;
+        this.u = 0;
+        this.F = 1;
+        this.Q = 0.2; // Default process noise
+        this.R = 0.5; // Default measurement noise
+        this.B = 0.1; // Default control gain
+        this.saveFilterTunablesToLocalStorage();
+        this.updateFilterModalValues();
+        showToast('Filter tunables reset.');
     }
 
     constructor(options = {}) {
@@ -210,6 +229,11 @@ class KalmanFilter {
 window.speedKalmanFilter = new KalmanFilter({
     initialValue: 0,
 });
+
+function showKalmanFilterModal(){
+    const kalmanFilterModal = new bootstrap.Modal(document.getElementById('KalmanFilterModal'));
+    kalmanFilterModal.show();
+}
 
 let dataLogChartInstance = null;
 
