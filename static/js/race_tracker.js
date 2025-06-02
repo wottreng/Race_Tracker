@@ -3,7 +3,6 @@ const RACE_TRACK_finish_line_points = {
         left: {latitude: 42.408023, longitude: -86.140656},
         right: {latitude: 42.408025, longitude: -86.140342}
     },
-    dev: {left: {latitude: 42.363145, longitude: -83.409558}, right: {latitude: 42.363070, longitude: -83.409418}},
 }
 
 function openTrackLapModal() {

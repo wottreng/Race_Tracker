@@ -133,13 +133,19 @@ describe('calculateTrackTimes', () => {
 
     it('calculates lap times with multiple crossings', () => {
         global.dataLog = [
-            { latitude: '42.407832', longitude: '-86.140499', timestamp: '2023-01-01T00:00:00Z' },
-            { latitude: '42.408362', longitude: '-86.140500', timestamp: '2023-01-01T00:01:00Z' },
-            { latitude: '42.407832', longitude: '-86.140499', timestamp: '2023-01-01T00:02:00Z' },
-            { latitude: '42.408362', longitude: '-86.140500', timestamp: '2023-01-01T00:03:00Z' },
+            { latitude: '42.407832', longitude: '-86.140499', timestamp: '2023-01-01T00:00:00Z' }, // before crossing
+            { latitude: '42.408362', longitude: '-86.140500', timestamp: '2023-01-01T00:01:00Z' }, // after crossing
+            { latitude: '42.408097', longitude: '-86.139188', timestamp: '2023-01-01T00:02:00Z' }, // point on track
+            { latitude: '42.407665', longitude: '-86.136015', timestamp: '2023-01-01T00:03:00Z' }, // point on track
+            { latitude: '42.407832', longitude: '-86.140499', timestamp: '2023-01-01T00:04:00Z' }, // before crossing
+            { latitude: '42.408362', longitude: '-86.140500', timestamp: '2023-01-01T00:05:00Z' }, // after crossing
+            { latitude: '42.408097', longitude: '-86.139188', timestamp: '2023-01-01T00:06:00Z' }, // point on track
+            { latitude: '42.407665', longitude: '-86.136015', timestamp: '2023-01-01T00:07:00Z' }, // point on track
+            { latitude: '42.407832', longitude: '-86.140499', timestamp: '2023-01-01T00:08:00Z' }, // before crossing
+            { latitude: '42.408362', longitude: '-86.140500', timestamp: '2023-01-01T00:09:00Z' }, // after crossing
         ];
         raceTracker.calculateTrackTimes();
-        expect(document.getElementById('trackTimes').innerText).toBe('Lap times: 60.00, 60.00 seconds');
+        expect(document.getElementById('trackTimes').innerText).toBe('Lap times: 240.00, 240.00 seconds');
     });
 });
 
