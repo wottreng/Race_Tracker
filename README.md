@@ -63,3 +63,8 @@ npx cypress open
 ## Contact
 
 For questions or support, please contact [Mark](mailto:mwottreng@yahoo.com).
+
+TODO:
+- fix permissions buttons locations
+- fix app install for iphone
+- check data logs

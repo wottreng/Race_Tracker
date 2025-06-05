@@ -97,7 +97,7 @@ function initMap() {
 function startLocationTracking() {
     console.log("Starting location tracking...");
     if (navigator.geolocation) {
-        document.getElementById('permissionBtn').style.display = 'none';
+        hideGPSpermissionButton();
 
         try {
             // Add check before starting the GPS watcher
@@ -123,7 +123,7 @@ function startLocationTracking() {
         }
     } else {
         console.error("Geolocation not supported by browser");
-        show_error("Geolocation is not supported by this browser.");
+        showToast("Geolocation is not supported by this browser.", 'error');
         document.getElementById('permissionBtn').style.display = 'block';
     }
 
@@ -230,7 +230,8 @@ function handleLocationError(error) {
     switch (error.code) {
         case error.PERMISSION_DENIED:
             errorMsg = "User denied geolocation permissions.";
-            document.getElementById('permissionBtn').style.display = 'block';
+            showGPSpermissionButton();
+            showPermissionModal();
             break;
         case error.POSITION_UNAVAILABLE:
             errorMsg = "Location information is unavailable.";
@@ -245,12 +246,12 @@ function handleLocationError(error) {
     show_error(errorMsg);
 }
 
-function requestPermission() {
+function requestGPSpermission() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             function (position) {
                 showToast("Permissions granted!");
-                document.getElementById('permissionBtn').style.display = 'none';
+                hideGPSpermissionButton();
                 startLocationTracking();
             },
             function (error) {
@@ -261,38 +262,107 @@ function requestPermission() {
     }
 }
 
+function showPermissionsBtnGroup(){
+    const permissionsBtnGroup = document.getElementById('permissionsBtnGroup');
+    if (permissionsBtnGroup) {
+        permissionsBtnGroup.style.display = 'block';
+    }
+}
+
+function hidePermissionsBtnGroup(){
+    const permissionBtn = document.getElementById('permissionBtn');
+    // if permission btn is visible, do not hide the group
+    if (permissionBtn.style.display !== 'none') {
+        return
+    }
+    // if motion sensor btn is visible, do not hide the group
+    const motionBtn = document.getElementById('motionPermissionBtn');
+    if (motionBtn.style.display !== 'none') {
+        return;
+    }
+    const permissionsBtnGroup = document.getElementById('permissionsBtnGroup');
+    if (permissionsBtnGroup) {
+        permissionsBtnGroup.style.display = 'none';
+    }
+}
+
+function showGPSpermissionButton() {
+    const permissionBtn = document.getElementById('permissionBtn');
+    if (permissionBtn.style.display === 'none' || permissionBtn.style.display === '') {
+        permissionBtn.style.display = 'inline-block';
+    }
+    showPermissionsBtnGroup();
+}
+
+function hideGPSpermissionButton() {
+    const permissionBtn = document.getElementById('permissionBtn');
+    if (permissionBtn.style.display !== 'none') {
+        permissionBtn.style.display = 'none';
+    }
+    hidePermissionsBtnGroup();
+}
+
+function showPermissionModal(){
+    if (document.getElementById('PermissionsModal').classList.contains('show')) {
+        return; // Modal is already open
+    }
+    const modal = new bootstrap.Modal(document.getElementById('PermissionsModal'));
+    modal.show();
+}
+
+function hidePermissionModal(){
+    const modal = bootstrap.Modal.getInstance(document.getElementById('PermissionsModal'));
+    if (modal) {
+        modal.hide();
+    }
+}
+
+// request permission when btn is clicked
+function requestMotionPermission(){
+    if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission()
+            .then(response => {
+                if (response === 'granted') {
+                    showToast("Motion permissions granted!");
+                    initSensors();
+                } else {
+                    showToast("Motion permissions denied");
+                }
+            })
+            .catch(error => showToast(`Error requesting motion permission: ${error}`));
+    } else {
+        showToast("DeviceMotionEvent not supported on this device");
+    }
+}
+
+function showMotionPermissionButton() {
+    const motionBtn = document.getElementById("motionPermissionBtn");
+    if (motionBtn.style.display === 'none' || motionBtn.style.display === '') {
+        motionBtn.style.display = 'inline-block';
+    }
+    showPermissionsBtnGroup();
+}
+
+function hideMotionPermissionButton(){
+    const motionBtn = document.getElementById("motionPermissionBtn");
+    if (motionBtn.style.display !== 'none') {
+        motionBtn.style.display = 'none';
+    }
+    hidePermissionsBtnGroup();
+}
+
 function initSensors() {
     if (window.DeviceMotionEvent) {
-        console.log("DeviceMotionEvent is supported");
-
         // iOS 13+ requires explicit permission
         if (typeof DeviceMotionEvent.requestPermission === 'function') {
-            // Create a button for iOS permission request (must be triggered by user gesture)
-            const motionBtn = document.createElement('button');
-            motionBtn.innerText = 'Enable Motion Sensors';
-            motionBtn.className = 'btn btn-warning mb-2';
-            motionBtn.onclick = () => {
-                DeviceMotionEvent.requestPermission()
-                    .then(response => {
-                        if (response === 'granted') {
-                            window.addEventListener('devicemotion', motionHandler);
-                            showToast("Motion sensors activated");
-                            console.log("Motion sensors activated");
-                            motionBtn.remove();
-                        } else {
-                            showToast("Motion permission denied");
-                        }
-                    })
-                    .catch(error => showToast(`Error requesting motion permission: ${error}`));
-            };
-            document.querySelector('.card-header').appendChild(motionBtn);
+            // iOS 13+ requires permission request
+            showMotionPermissionButton();
         } else {
             // Android and older iOS versions
-            console.log("Motion sensors are available");
+            hideMotionPermissionButton();
             window.removeEventListener('devicemotion', motionHandler);
             window.addEventListener('devicemotion', motionHandler);
         }
-
         initTractionCircle();
     } else {
         document.getElementById('gX').innerText = "Motion sensors not supported";
@@ -304,7 +374,7 @@ function motionHandler(event) {
     // Check if event has valid acceleration data
     if (!event.accelerationIncludingGravity) {
         console.warn("Motion event missing acceleration data");
-        showToast("Motion event missing acceleration data");
+        showToast("Motion event missing acceleration data", 'warning');
         return;
     }
     totalG = calculateGForce(event.acceleration, window.currentGForce.x, window.currentGForce.y, window.currentGForce.z);

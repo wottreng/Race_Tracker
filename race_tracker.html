@@ -58,13 +58,15 @@
                 <h6 class="mb-0">Data Reset Options</h6>
             </div>
             <div class="card-body">
+                <div class="d-flex flex-column gap-2 mb-3">
+                    <button class="btn d-flex align-items-center option_btn"
+                            onclick="showPermissionModal();">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>
+                        <span>Show Permissions Panel</span>
+                    </button>
+                </div>
                 <div class="d-flex flex-column gap-2">
                     <div class="d-flex flex-column gap-2">
-                        <button class="btn d-flex align-items-center option_btn"
-                                onclick="reset_GPS()">
-                            <i class="bi bi-arrow-counterclockwise me-2"></i>
-                            <span>Reset GPS</span>
-                        </button>
                         <button class="btn d-flex align-items-center option_btn"
                                 onclick="resetMaxSpeed()">
                             <i class="bi bi-arrow-counterclockwise me-2"></i>
@@ -73,6 +75,11 @@
                         <button class="btn d-flex align-items-center option_btn" onclick="resetMaxG()">
                             <i class="bi bi-arrow-counterclockwise me-2"></i>
                             <span>Reset Maximum G-Force</span>
+                        </button>
+                        <button class="btn d-flex align-items-center option_btn"
+                                onclick="reset_GPS()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                            <span>Reset GPS</span>
                         </button>
                     </div>
                     <div class="d-flex flex-column gap-2 pt-2 pb-2">
@@ -206,11 +213,6 @@
     <div class="card text-white mb-3">
         <div class="card-header bg-gradient d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="bi bi-geo-alt-fill me-2"></i>GPS Position</h5>
-            <div>
-                <button class="btn btn-sm btn-warning me-1" id="permissionBtn" onclick="requestPermission()">
-                    <i class="bi bi-shield-check me-1"></i>Fix Permission
-                </button>
-            </div>
         </div>
         <div class="card-body gps-data">
             <div class="row">
@@ -378,6 +380,34 @@
                             type="button">Save Settings
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="PermissionsModal" tabindex="-1">
+    <div class="modal-dialog text-black">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Device Permissions</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <p>In order for this app to function properly, it requires access to your device's GPS and motion
+                    sensors.</p>
+                <div class="pb-2" id="permissionsBtnGroup" style="display: none;">
+                    <p>Please make sure your permissions in the device settings allow access.</p>
+                    <p>Click the buttons below to allow access to GPS and motion sensors</p>
+                    <button class="btn btn-sm btn-warning me-1" id="permissionBtn" onclick="requestGPSpermission()">
+                        <i class="bi bi-shield-check me-1"></i>Fix GPS Permission
+                    </button>
+                    <button class="btn btn-sm btn-warning me-1" id="motionPermissionBtn"
+                            onclick="requestMotionPermission()">
+                        <i class="bi bi-shield-check me-1"></i>Fix Motion Sensor Permission
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+
             </div>
         </div>
     </div>
